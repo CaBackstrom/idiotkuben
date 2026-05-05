@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { loadSession, clearSession } from './persistence/session'
 import { type Route } from './pages/routes'
 import DemoPage from './components/DemoPage'
@@ -8,17 +8,36 @@ import InputPage from './pages/InputPage'
 import SolvePage from './pages/SolvePage'
 import { sv } from './i18n/sv'
 
+function pathToRoute(path: string): Route {
+  if (path === '/input') return '/input'
+  if (path === '/solve') return '/solve'
+  return '/'
+}
+
 export default function App() {
-  const [route, setRoute] = useState<Route>('/')
+  const [route, setRoute] = useState<Route>(() => pathToRoute(window.location.pathname))
   const [session, setSession] = useState(() => loadSession())
 
+  useEffect(() => {
+    function onPopState() {
+      const r = pathToRoute(window.location.pathname)
+      setRoute(r)
+      if (r === '/') setSession(loadSession())
+    }
+    window.addEventListener('popstate', onPopState)
+    return () => window.removeEventListener('popstate', onPopState)
+  }, [])
+
   function navigate(r: Route) {
+    window.history.pushState(null, '', r)
     setRoute(r)
+    if (r === '/') setSession(loadSession())
   }
 
   function handleFresh() {
     clearSession()
     setSession(null)
+    window.history.replaceState(null, '', '/')
     setRoute('/')
   }
 
@@ -29,15 +48,15 @@ export default function App() {
         session ? (
           <ContinuePrompt
             session={session}
-            navigate={(r) => { setRoute(r) }}
+            navigate={navigate}
             onFresh={handleFresh}
           />
         ) : (
           <div>
-            <div className="bg-[#FAFAF7] px-6 pt-4 pb-0 font-sans">
+            <div className="bg-[#FAFAF7] px-6 pt-6 pb-0 font-sans">
               <button
                 onClick={() => navigate('/input')}
-                className="text-sm text-gray-600 hover:text-[#1A1A1A] underline underline-offset-2 transition-colors"
+                className="px-5 py-2.5 text-sm font-semibold bg-[#1A1A1A] text-white rounded hover:bg-[#333] transition-colors"
               >
                 {sv.demo.trySolver}
               </button>

@@ -11,7 +11,7 @@ export const sv = {
     state: 'State (JSON)',
     verifyOk: 'OK — state och visual stämmer',
     verifyFail: 'FEL — state och visual matchar inte',
-    trySolver: 'Prova lösaren →',
+    trySolver: 'Lös min kub →',
   },
   phases: {
     1: 'Vita korset',
