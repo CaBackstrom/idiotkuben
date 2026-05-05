@@ -27,14 +27,32 @@ src/
     notation.ts       — parseNotation("R U R' U2") → MoveName[]
     prng.ts           — mulberry32 seedable PRNG
     queries.ts        — isCubeSolved, isWhiteCrossSolved, findEdge, findCorner, …
-    validate.ts       — isValidCubeState (checks 1-3; parity stubs for M2)
+    validate.ts       — isValidCubeState (all 6 checks incl. parity)
     verify.ts         — verifyScene(state, THREE.Object3D) → mismatches
     __tests__/
       moves.test.ts   — 13 tests covering moves, notation, validate
+      validate.test.ts — parity / orientation / permutation tests
+  solver/
+    cubejs.d.ts       — TS declaration for cubejs npm package
+    solve.ts          — solveFromState() wrapping cubejs Kociemba solver
+    phases.ts         — sliceIntoPhases() → Phase[4] (LBL phase boundaries)
+    __tests__/
+      solver.test.ts  — solve + phase tests (15s timeout for cubejs init)
+  persistence/
+    session.ts        — SavedSession v1, saveSession/loadSession/clearSession
+  pages/
+    routes.ts         — Route type, Navigate type
+    InputPage.tsx     — color input form → validate → save → /solve
+    SolvePage.tsx     — load session, solve, render SolutionPlayer
   components/
     Cube3D.tsx        — imperative THREE.js cube, r3f Canvas wrapper
     MoveQueue.tsx     — useMoveQueue() hook (queue, enqueue, onMoveComplete, clear)
     DemoPage.tsx      — milestone 1 demo page
+    ColorInput.tsx    — 2D unfolded cross color picker, locked centers
+    SolutionPlayer.tsx — phase-by-phase move player with Cube3D re-mount on phase change
+    PhaseProgress.tsx  — 4-step stepper (active/done/pending)
+    ContinuePrompt.tsx — resume or start-fresh prompt when session exists
+    StorageBanner.tsx  — dismissible localStorage notice
   main.tsx / App.tsx / index.css
 ```
 
@@ -64,7 +82,7 @@ src/
 ```bash
 npm run dev    # dev server at localhost:5173
 npm run build  # production build to dist/
-npm test       # vitest (13 tests, all passing)
+npm test       # vitest (28 tests, all passing)
 ```
 
 ---
@@ -84,7 +102,17 @@ npm test       # vitest (13 tests, all passing)
 - [x] TypeScript strict mode — clean
 - [x] npm run build — clean (chunk size warning is expected; three.js is large)
 
-## Milestone 2 — next
+## Milestone 2 — done
 
-Color input page, cubejs solver integration, phase slicing (4-phase L×L),
-solution playback, localStorage persistence. Parity checks in validate.ts.
+- [x] validate.ts — full parity checks (corner orientation, edge orientation, permutation parity)
+- [x] cubejs integration — solveFromState() with Kociemba two-phase solver
+- [x] phases.ts — sliceIntoPhases() splitting solution into 4 LBL phases
+- [x] persistence/session.ts — SavedSession v1 in localStorage
+- [x] InputPage — 2D unfolded color picker with live validation
+- [x] SolvePage — async solve (setTimeout 50ms), phase slicing, SolutionPlayer
+- [x] SolutionPlayer — per-phase Cube3D playback, skip/back/next
+- [x] PhaseProgress, ContinuePrompt, StorageBanner components
+- [x] Routing (App.tsx) — /, /input, /solve via useState
+- [x] 28 unit tests passing
+- [x] TypeScript strict mode — clean
+- [x] npm run build — clean
