@@ -74,4 +74,11 @@ describe('phases', () => {
     expect(phases).toHaveLength(4)
     expect(phases.every(p => p.moves.length === 0)).toBe(true)
   })
+
+  test('all four phases have at least 1 move for a scrambled cube', () => {
+    const initial = scramble(29810)
+    const solution = solveFromState(initial)
+    const phases = sliceIntoPhases(initial, solution)
+    expect(phases.every(p => p.moves.length >= 1)).toBe(true)
+  }, SOLVER_TIMEOUT)
 })

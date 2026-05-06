@@ -36,7 +36,7 @@ export default function InputPage({ navigate }: Props) {
   return (
     <div className="min-h-screen bg-[#FAFAF7] text-[#1A1A1A] p-6 font-sans">
       <h1 className="text-2xl font-semibold tracking-tight mb-6">{sv.input.title}</h1>
-      <ColorInput onSubmit={handleSubmit} error={error} />
+      <ColorInput onSubmit={handleSubmit} error={error} onClearError={() => setError(null)} />
     </div>
   )
 }

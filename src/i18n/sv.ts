@@ -25,6 +25,8 @@ export const sv = {
     submit: 'Lös min kub',
     invalid: 'Ogiltigt kubställning',
     solving: 'Hittar lösning…',
+    scramble: 'Blanda kub',
+    seed: 'Slump',
     palette: 'Välj färg',
     faceLabels: {
       U: 'Upp (vitt)',
