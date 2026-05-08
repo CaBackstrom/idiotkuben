@@ -10,10 +10,7 @@ type Props = {
 
 export default function TopNav({ navigate, onBack, right }: Props) {
   return (
-    <header
-      className="sticky top-0 z-40 bg-white border-b border-[var(--border)]"
-      style={{ height: '56px' }}
-    >
+    <header className="sticky top-0 z-40 bg-white border-b border-[var(--border)] h-12 sm:h-14">
       <div className="flex items-center h-full px-4 sm:px-6 gap-4">
         <div className="flex-1">
           {onBack && (

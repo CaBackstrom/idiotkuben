@@ -63,12 +63,9 @@ export default function SolvePage({ navigate }: Props) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[var(--bg)] font-sans">
+      <div className="min-h-screen bg-[var(--bg)] font-sans flex flex-col">
         <TopNav navigate={navigate} onBack={() => navigate('/input')} />
-        <div
-          className="flex items-center justify-center"
-          style={{ minHeight: 'calc(100vh - 56px)' }}
-        >
+        <div className="flex-1 flex items-center justify-center">
           <p className="text-sm text-[var(--muted)] animate-pulse">{sv.solve.loading}</p>
         </div>
       </div>
@@ -77,12 +74,9 @@ export default function SolvePage({ navigate }: Props) {
 
   if (error || !session || !phases) {
     return (
-      <div className="min-h-screen bg-[var(--bg)] font-sans">
+      <div className="min-h-screen bg-[var(--bg)] font-sans flex flex-col">
         <TopNav navigate={navigate} onBack={() => navigate('/input')} />
-        <div
-          className="flex flex-col items-center justify-center gap-4 text-[var(--fg)] p-6"
-          style={{ minHeight: 'calc(100vh - 56px)' }}
-        >
+        <div className="flex-1 flex flex-col items-center justify-center gap-4 text-[var(--fg)] p-6">
           <p className="text-sm text-[var(--accent)]">{error ?? sv.solve.noSession}</p>
           <button
             onClick={() => navigate('/input')}
