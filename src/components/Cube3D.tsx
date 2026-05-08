@@ -319,7 +319,7 @@ export default function Cube3D({
       onMouseLeave={() => setHovered(false)}
     >
       <Canvas
-        camera={{ position: [3.5, 3.5, 3.5], fov: 45 }}
+        camera={{ position: [4, 4, 4], fov: 45 }}
         dpr={[1, 2]}
         style={{ width: '100%', height: '100%', display: 'block' }}
       >
