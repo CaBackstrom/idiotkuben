@@ -65,7 +65,7 @@ export default function ColorInput({ onSubmit, error, onClearError }: Props) {
   const submitBtn = (
     <button
       onClick={handleSubmit}
-      className="px-5 py-2.5 text-sm font-semibold bg-[#1A1A1A] text-white rounded hover:bg-[#333] transition-colors"
+      className="px-5 py-2.5 text-sm font-semibold bg-[var(--accent)] text-white rounded hover:opacity-90 transition-opacity"
     >
       {sv.input.submit}
     </button>
@@ -79,7 +79,7 @@ export default function ColorInput({ onSubmit, error, onClearError }: Props) {
       <div className="flex items-center gap-3 flex-wrap">
         <button
           onClick={handleScramble}
-          className="px-5 py-2.5 text-sm font-semibold bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+          className="px-5 py-2.5 text-sm font-semibold bg-white border border-[var(--border)] rounded hover:bg-gray-50 transition-colors"
         >
           {sv.input.scramble}
         </button>
@@ -100,7 +100,7 @@ export default function ColorInput({ onSubmit, error, onClearError }: Props) {
               style={{ backgroundColor: color === 'U' ? '#FFFFFF' : FACE_COLORS[color] }}
               className={`w-8 h-8 rounded transition-all ${
                 activeColor === color
-                  ? 'border-2 border-[#1A1A1A] scale-110 shadow-sm'
+                  ? 'border-2 border-[var(--fg)] scale-110 shadow-sm'
                   : 'border-2 border-gray-300'
               }`}
               title={sv.input.faceLabels[color]}
@@ -141,7 +141,7 @@ export default function ColorInput({ onSubmit, error, onClearError }: Props) {
       </div>
 
       {error && (
-        <div className="text-sm px-3 py-2 rounded border bg-red-50 border-red-200 text-red-800">
+        <div className="text-sm px-3 py-2 rounded border-l-4 border-[var(--accent)] bg-white text-[var(--fg)]">
           {error}
         </div>
       )}
@@ -180,7 +180,7 @@ function FaceGrid({ face, stickers, painted, onPaint }: FaceGridProps) {
             extraBorder = 'border-gray-300'
           } else if (isWhite) {
             bg = '#FFFFFF'
-            extraBorder = 'border-[#444444] border-2'
+            extraBorder = 'border-[var(--muted)] border-2'
           } else {
             bg = FACE_COLORS[color]
             extraBorder = 'border-gray-500'

@@ -20,9 +20,12 @@ export default function InputPage({ navigate }: Props) {
       setError(result.reason ?? sv.input.invalid)
       return
     }
+    const rawLevel = localStorage.getItem('idiotkuben:pendingLevel')
+    const level: 'guided' | 'quick' = rawLevel === 'guided' ? 'guided' : 'quick'
+    localStorage.removeItem('idiotkuben:pendingLevel')
     saveSession({
       version: 1,
-      level: 'quick',
+      level,
       cubeState: state,
       solution: [],
       currentStepIndex: 0,
@@ -34,8 +37,8 @@ export default function InputPage({ navigate }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAF7] text-[#1A1A1A] p-6 font-sans">
-      <h1 className="text-2xl font-semibold tracking-tight mb-6">{sv.input.title}</h1>
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)] p-6 font-sans">
+      <h1 className="text-3xl font-bold tracking-tight mb-6" style={{ fontFamily: 'var(--font-display)' }}>{sv.input.title}</h1>
       <ColorInput onSubmit={handleSubmit} error={error} onClearError={() => setError(null)} />
     </div>
   )

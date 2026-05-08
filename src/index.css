@@ -1,7 +1,19 @@
 @import "tailwindcss";
 
+:root {
+  --bg: #FAFAF7;
+  --fg: #1A1A1A;
+  --accent: #C8102E;
+  --muted: #6B6B6B;
+  --border: #E5E5E0;
+  --font-display: 'Fraunces', serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
 body {
   margin: 0;
-  background: #FAFAF7;
-  color: #1A1A1A;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
 }

@@ -327,3 +327,27 @@ export function solveLayerByLayer(state: CubeState): MoveName[] {
   const p4 = solveYellowSide(s3)
   return [...p1, ...p2, ...p3, ...p4]
 }
+
+export type LBLPhaseResult = {
+  id: 1 | 2 | 3 | 4
+  nameKey: string
+  moves: MoveName[]
+  stateAfter: CubeState
+}
+
+export function solveLayerByLayerPhases(state: CubeState): LBLPhaseResult[] {
+  const p1 = solveWhiteCross(state)
+  const s1 = applyMoves(state, p1)
+  const p2 = solveWhiteCorners(s1)
+  const s2 = applyMoves(s1, p2)
+  const p3 = solveMiddleLayer(s2)
+  const s3 = applyMoves(s2, p3)
+  const p4 = solveYellowSide(s3)
+  const s4 = applyMoves(s3, p4)
+  return [
+    { id: 1, nameKey: 'phase1', moves: p1, stateAfter: s1 },
+    { id: 2, nameKey: 'phase2', moves: p2, stateAfter: s2 },
+    { id: 3, nameKey: 'phase3', moves: p3, stateAfter: s3 },
+    { id: 4, nameKey: 'phase4', moves: p4, stateAfter: s4 },
+  ]
+}

@@ -104,7 +104,7 @@ export default function DemoPage() {
   const lastMoves = history.slice(-8).map(m => MOVE_LABELS[m]).join(' ')
 
   return (
-    <div className="min-h-screen bg-[#FAFAF7] text-[#1A1A1A] p-6 font-sans">
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)] p-6 font-sans">
       <h1 className="text-2xl font-semibold tracking-tight mb-6">{sv.demo.title}</h1>
 
       <div className="flex flex-col lg:flex-row gap-6">

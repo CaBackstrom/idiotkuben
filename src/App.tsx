@@ -6,9 +6,11 @@ import ContinuePrompt from './components/ContinuePrompt'
 import StorageBanner from './components/StorageBanner'
 import InputPage from './pages/InputPage'
 import SolvePage from './pages/SolvePage'
+import LevelPage from './pages/LevelPage'
 import { sv } from './i18n/sv'
 
 function pathToRoute(path: string): Route {
+  if (path === '/level') return '/level'
   if (path === '/input') return '/input'
   if (path === '/solve') return '/solve'
   return '/'
@@ -32,6 +34,7 @@ export default function App() {
     window.history.pushState(null, '', r)
     setRoute(r)
     if (r === '/') setSession(loadSession())
+    if (r === '/level') setSession(loadSession())
   }
 
   function handleFresh() {
@@ -53,10 +56,19 @@ export default function App() {
           />
         ) : (
           <div>
-            <div className="bg-[#FAFAF7] px-6 pt-6 pb-0 font-sans">
+            <div className="bg-[var(--bg)] px-6 pt-8 pb-4 font-sans max-w-2xl">
+              <h1
+                className="text-4xl font-bold text-[var(--fg)] leading-tight mb-2"
+                style={{ fontFamily: 'var(--font-display)' }}
+              >
+                Idiotkuben
+              </h1>
+              <p className="text-base text-[var(--muted)] mb-5">
+                Lär dig lösa en Rubiks kub — ett drag i taget.
+              </p>
               <button
-                onClick={() => navigate('/input')}
-                className="px-5 py-2.5 text-sm font-semibold bg-[#1A1A1A] text-white rounded hover:bg-[#333] transition-colors"
+                onClick={() => navigate('/level')}
+                className="px-5 py-2.5 text-sm font-semibold bg-[var(--accent)] text-white rounded hover:opacity-90 transition-opacity"
               >
                 {sv.demo.trySolver}
               </button>
@@ -65,6 +77,7 @@ export default function App() {
           </div>
         )
       )}
+      {route === '/level' && <LevelPage navigate={navigate} />}
       {route === '/input' && <InputPage navigate={navigate} />}
       {route === '/solve' && <SolvePage navigate={navigate} />}
     </>

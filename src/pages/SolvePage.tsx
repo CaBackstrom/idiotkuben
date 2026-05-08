@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { loadSession, saveSession } from '../persistence/session'
 import { solveFromState } from '../solver/solve'
+import { solveLayerByLayerPhases } from '../solver/lbl'
 import { sliceIntoPhases, type Phase } from '../solver/phases'
 import { sv } from '../i18n/sv'
 import SolutionPlayer from '../components/SolutionPlayer'
@@ -14,6 +15,7 @@ export default function SolvePage({ navigate }: Props) {
   const [phases, setPhases] = useState<Phase[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [solverMode, setSolverMode] = useState<'guided' | 'quick'>('quick')
 
   const session = loadSession()
 
@@ -24,12 +26,22 @@ export default function SolvePage({ navigate }: Props) {
       return
     }
 
+    const level = session.level
+    setSolverMode(level === 'guided' ? 'guided' : 'quick')
     setLoading(true)
-    // setTimeout lets React render the loading indicator before the blocking solve call
+
     const timer = setTimeout(() => {
       try {
-        const moves = solveFromState(session.cubeState)
-        const sliced = sliceIntoPhases(session.cubeState, moves)
+        let sliced: Phase[]
+        let moves: ReturnType<typeof solveFromState>
+        if (level === 'guided') {
+          const lblPhases = solveLayerByLayerPhases(session.cubeState)
+          sliced = lblPhases
+          moves = lblPhases.flatMap(p => p.moves)
+        } else {
+          moves = solveFromState(session.cubeState)
+          sliced = sliceIntoPhases(session.cubeState, moves)
+        }
         saveSession({ ...session, solution: moves })
         setPhases(sliced)
       } catch (e) {
@@ -45,19 +57,19 @@ export default function SolvePage({ navigate }: Props) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#FAFAF7] flex items-center justify-center text-[#1A1A1A] font-sans">
-        <p className="text-sm text-gray-500">{sv.solve.loading}</p>
+      <div className="min-h-screen bg-[var(--bg)] flex items-center justify-center text-[var(--fg)] font-sans">
+        <p className="text-sm text-[var(--muted)]">{sv.solve.loading}</p>
       </div>
     )
   }
 
   if (error || !session || !phases) {
     return (
-      <div className="min-h-screen bg-[#FAFAF7] flex flex-col items-center justify-center gap-4 text-[#1A1A1A] font-sans p-6">
-        <p className="text-sm text-red-700">{error ?? sv.solve.noSession}</p>
+      <div className="min-h-screen bg-[var(--bg)] flex flex-col items-center justify-center gap-4 text-[var(--fg)] font-sans p-6">
+        <p className="text-sm text-[var(--accent)]">{error ?? sv.solve.noSession}</p>
         <button
           onClick={() => navigate('/input')}
-          className="px-4 py-2 text-sm bg-[#1A1A1A] text-white rounded hover:bg-[#333] transition-colors"
+          className="px-4 py-2 text-sm bg-[var(--fg)] text-white rounded hover:opacity-80 transition-opacity"
         >
           {sv.solve.goToInput}
         </button>
@@ -66,8 +78,12 @@ export default function SolvePage({ navigate }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAF7] text-[#1A1A1A] p-6 font-sans">
-      <SolutionPlayer initialState={session.cubeState} phases={phases} />
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)] p-6 font-sans">
+      <SolutionPlayer
+        initialState={session.cubeState}
+        phases={phases}
+        mode={solverMode}
+      />
     </div>
   )
 }

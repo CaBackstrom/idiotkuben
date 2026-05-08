@@ -17,7 +17,7 @@ export default function PhaseProgress({ currentPhase, phases }: Props) {
             key={phase.id}
             className={`flex-1 rounded px-2 py-2 text-xs text-center transition-colors ${
               isActive
-                ? 'bg-[#1A1A1A] text-white font-medium'
+                ? 'bg-[var(--fg)] text-white font-medium'
                 : isDone
                 ? 'bg-gray-200 text-gray-500'
                 : 'bg-gray-100 text-gray-400'
