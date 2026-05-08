@@ -1,5 +1,5 @@
 /// <reference types="three" />
-import { useRef, useEffect, useCallback } from 'react'
+import { useRef, useEffect, useCallback, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
@@ -306,9 +306,18 @@ export default function Cube3D({
   quality: _quality, activeFace, showOrientationBadge, isAnimating = false,
 }: Cube3DProps) {
   const badgeRef = useRef<HTMLDivElement | null>(null)
+  const [hovered, setHovered] = useState(false)
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+    <div
+      style={{
+        position: 'relative', width: '100%', height: '100%',
+        boxShadow: hovered ? '0 0 40px 8px rgba(200,16,46,0.15)' : '0 0 0px 0px rgba(200,16,46,0)',
+        transition: hovered ? 'box-shadow 200ms ease-out' : 'box-shadow 300ms ease-out',
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
       <Canvas
         camera={{ position: [3.5, 3.5, 3.5], fov: 45 }}
         dpr={[1, 2]}

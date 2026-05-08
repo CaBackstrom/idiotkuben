@@ -67,11 +67,15 @@ function makeConfetti() {
 
 // ── Phase completion overlay ──────────────────────────────────────────────────
 
-function PhaseOverlay({ phaseId }: { phaseId: number }) {
+function PhaseOverlay({ phaseId, onDismiss }: { phaseId: number; onDismiss: () => void }) {
   const { t } = useLanguage()
   return (
-    <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-50">
-      <div className="phase-overlay-enter bg-white/95 border border-[var(--border)] rounded-xl px-8 py-5 text-center shadow-lg">
+    <div
+      className="fixed inset-0 flex items-center justify-center z-50 cursor-pointer"
+      style={{ background: 'rgba(26,26,26,0.4)', backdropFilter: 'blur(4px)' }}
+      onClick={onDismiss}
+    >
+      <div className="phase-overlay-enter bg-white border border-[var(--border)] rounded-xl px-8 py-5 text-center shadow-lg">
         <div
           className="text-2xl font-bold text-[var(--accent)] mb-1"
           style={{ fontFamily: 'var(--font-mono)' }}
@@ -204,7 +208,7 @@ function GuidedPlayer({ initialState, phases, navigate, onPhaseChange, solveStar
       track('phase_completed', { phase: String(currentPhase.id) })
       setPhaseOverlay(currentPhase.id)
       sounds.phaseComplete()
-      setTimeout(() => setPhaseOverlay(null), 1500)
+      setTimeout(() => setPhaseOverlay(null), 1800)
       onPhaseChange?.(nextInfo.phase.id)
     }
 
@@ -277,13 +281,13 @@ function GuidedPlayer({ initialState, phases, navigate, onPhaseChange, solveStar
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <button
               onClick={() => { clearSession(); navigate?.('/input') }}
-              className="py-3 text-sm font-semibold bg-[var(--accent)] text-white rounded hover:opacity-90 active:scale-[0.98] transition-all duration-150"
+              className="py-3 text-sm font-semibold bg-[var(--accent)] text-white rounded hover:opacity-90 active:scale-[0.97] transition-all duration-150"
             >
               {t('solve.solveAnother')}
             </button>
             <button
               onClick={() => navigate?.('/')}
-              className="py-3 text-sm border border-[var(--border)] rounded hover:bg-gray-50 active:scale-[0.98] transition-all duration-150"
+              className="py-3 text-sm border border-[var(--border)] rounded hover:bg-gray-50 active:scale-[0.97] transition-all duration-150"
             >
               {t('solve.backToStart')}
             </button>
@@ -302,7 +306,7 @@ function GuidedPlayer({ initialState, phases, navigate, onPhaseChange, solveStar
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {phaseOverlay !== null && <PhaseOverlay phaseId={phaseOverlay} />}
+      {phaseOverlay !== null && <PhaseOverlay phaseId={phaseOverlay} onDismiss={() => setPhaseOverlay(null)} />}
 
       {showProactiveCard && (
         <ProactiveCard
@@ -405,14 +409,14 @@ function GuidedPlayer({ initialState, phases, navigate, onPhaseChange, solveStar
           <button
             onClick={handleBack}
             disabled={guidedStep === 0 || mq.isAnimating}
-            className="py-2.5 text-sm border border-[var(--border)] rounded hover:bg-gray-50 hover:shadow-sm disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition-all duration-150"
+            className="py-2.5 text-sm border border-[var(--border)] rounded hover:bg-gray-50 hover:shadow-sm disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.97] transition-all duration-150"
           >
             {'←'} {t('guided.back')}
           </button>
           <button
             onClick={handleNext}
             disabled={mq.isAnimating}
-            className="min-h-[56px] sm:min-h-0 sm:py-2.5 py-4 text-sm font-medium bg-[var(--accent)] text-white rounded hover:opacity-90 hover:shadow-sm disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition-all duration-150"
+            className="min-h-[56px] sm:min-h-0 sm:py-2.5 py-4 text-sm font-medium bg-[var(--accent)] text-white rounded hover:opacity-90 hover:shadow-sm disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.97] transition-all duration-150"
           >
             {t('guided.next')} {'→'}
           </button>
@@ -462,7 +466,7 @@ function QuickPlayer({ initialState, phases, navigate, onPhaseChange, solveStart
     const completedPhaseId = currentPhase.id
 
     setPhaseOverlay(completedPhaseId)
-    setTimeout(() => setPhaseOverlay(null), 1500)
+    setTimeout(() => setPhaseOverlay(null), 1800)
     onPhaseChange?.((nextIdx + 1) as 1 | 2 | 3 | 4)
 
     updateStep(
@@ -527,13 +531,13 @@ function QuickPlayer({ initialState, phases, navigate, onPhaseChange, solveStart
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <button
               onClick={() => { clearSession(); navigate?.('/input') }}
-              className="py-3 text-sm font-semibold bg-[var(--accent)] text-white rounded hover:opacity-90 active:scale-[0.98] transition-all duration-150"
+              className="py-3 text-sm font-semibold bg-[var(--accent)] text-white rounded hover:opacity-90 active:scale-[0.97] transition-all duration-150"
             >
               {t('solve.solveAnother')}
             </button>
             <button
               onClick={() => navigate?.('/')}
-              className="py-3 text-sm border border-[var(--border)] rounded hover:bg-gray-50 active:scale-[0.98] transition-all duration-150"
+              className="py-3 text-sm border border-[var(--border)] rounded hover:bg-gray-50 active:scale-[0.97] transition-all duration-150"
             >
               {t('solve.backToStart')}
             </button>
@@ -548,7 +552,7 @@ function QuickPlayer({ initialState, phases, navigate, onPhaseChange, solveStart
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {phaseOverlay !== null && <PhaseOverlay phaseId={phaseOverlay} />}
+      {phaseOverlay !== null && <PhaseOverlay phaseId={phaseOverlay} onDismiss={() => setPhaseOverlay(null)} />}
 
       {/* Left: sticky cube */}
       <div>
@@ -592,27 +596,27 @@ function QuickPlayer({ initialState, phases, navigate, onPhaseChange, solveStart
           <button
             onClick={playPhase}
             disabled={mq.isAnimating || currentPhase.moves.length === 0}
-            className="py-2.5 text-sm bg-[var(--fg)] text-white rounded hover:opacity-80 hover:shadow-sm disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition-all duration-150"
+            className="py-2.5 text-sm bg-[var(--fg)] text-white rounded hover:opacity-80 hover:shadow-sm disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.97] transition-all duration-150"
           >
             {t('solve.play')}
           </button>
           <button
             onClick={skipToEnd}
-            className="py-2.5 text-sm border border-[var(--border)] rounded hover:bg-gray-50 active:scale-[0.98] transition-all duration-150"
+            className="py-2.5 text-sm border border-[var(--border)] rounded hover:bg-gray-50 active:scale-[0.97] transition-all duration-150"
           >
             {t('solve.skip')}
           </button>
           <button
             onClick={goPrev}
             disabled={isFirstPhase || mq.isAnimating}
-            className="py-2.5 text-sm border border-[var(--border)] rounded hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition-all duration-150"
+            className="py-2.5 text-sm border border-[var(--border)] rounded hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.97] transition-all duration-150"
           >
             {'←'} {t('solve.prev')}
           </button>
           <button
             onClick={isLastPhase ? handleComplete : goNext}
             disabled={mq.isAnimating}
-            className="py-2.5 text-sm border border-[var(--border)] rounded hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition-all duration-150"
+            className="py-2.5 text-sm border border-[var(--border)] rounded hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.97] transition-all duration-150"
           >
             {isLastPhase ? t('solve.done') : `${t('solve.next')} →`}
           </button>
