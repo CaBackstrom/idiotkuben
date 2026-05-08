@@ -2,9 +2,10 @@ import { useState } from 'react'
 import { type CubeState, type StickerColor, type Face, solvedState, FACE_COLORS } from '../cube/CubeState'
 import { Moves, ALL_MOVES } from '../cube/moves'
 import { mulberry32 } from '../cube/prng'
-import { sv } from '../i18n/sv'
+import { useLanguage } from '../context/LanguageContext'
 
 const ALL_COLORS: StickerColor[] = ['U', 'R', 'F', 'D', 'L', 'B']
+const FACE_ORDER: (keyof CubeState)[] = ['U', 'L', 'F', 'R', 'B', 'D']
 
 type Props = {
   onSubmit: (state: CubeState) => void
@@ -18,6 +19,7 @@ function stickerKey(face: keyof CubeState, index: number): string {
 }
 
 export default function ColorInput({ onSubmit, error, onClearError, isSubmitting = false }: Props) {
+  const { t } = useLanguage()
   const [stickers, setStickers] = useState<CubeState>(solvedState)
   const [activeColor, setActiveColor] = useState<StickerColor>('U')
   const [painted, setPainted] = useState<Set<string>>(() => new Set())
@@ -57,7 +59,6 @@ export default function ColorInput({ onSubmit, error, onClearError, isSubmitting
     onSubmit(stickers)
   }
 
-  // Live per-color count across all 54 stickers
   const counts: Record<StickerColor, number> = { U: 0, R: 0, F: 0, D: 0, L: 0, B: 0 }
   for (const face of ALL_COLORS as (keyof CubeState)[]) {
     for (const c of stickers[face]) counts[c]++
@@ -69,13 +70,56 @@ export default function ColorInput({ onSubmit, error, onClearError, isSubmitting
       disabled={isSubmitting}
       className="px-5 py-2.5 text-sm font-semibold bg-[var(--accent)] text-white rounded hover:opacity-90 hover:shadow-sm disabled:opacity-60 active:scale-[0.98] transition-all duration-150 w-full sm:w-auto"
     >
-      {isSubmitting ? sv.input.solving : sv.input.submit}
+      {isSubmitting ? t('input.solving') : t('input.submit')}
     </button>
+  )
+
+  const palette = (
+    <div className="sticky top-14 z-10 bg-[var(--bg)] pb-2 pt-1">
+      <p className="text-xs font-medium uppercase tracking-wider text-gray-500 mb-2">{t('input.palette')}</p>
+      <div className="flex gap-3 flex-wrap">
+        {ALL_COLORS.map(color => (
+          <button
+            key={color}
+            onClick={() => setActiveColor(color)}
+            title={t(`input.faceLabels.${color}`)}
+            style={{
+              width: '44px',
+              height: '44px',
+              borderRadius: '50%',
+              backgroundColor: color === 'U' ? '#FFFFFF' : FACE_COLORS[color],
+              boxShadow: activeColor === color
+                ? '0 0 0 2px white, 0 0 0 4px var(--fg)'
+                : '0 0 0 1px rgba(0,0,0,0.1)',
+              transition: 'transform 150ms, box-shadow 150ms',
+              transform: activeColor === color ? 'scale(1.05)' : 'scale(1)',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+            onMouseEnter={e => { if (activeColor !== color) (e.currentTarget as HTMLElement).style.transform = 'scale(1.05)' }}
+            onMouseLeave={e => { if (activeColor !== color) (e.currentTarget as HTMLElement).style.transform = 'scale(1)' }}
+          />
+        ))}
+      </div>
+      <div className="flex gap-3 mt-2 flex-wrap">
+        {ALL_COLORS.map(color => {
+          const n = counts[color]
+          return (
+            <span
+              key={color}
+              className={`text-xs font-mono font-semibold ${n === 9 ? 'text-green-600' : 'text-red-600'}`}
+            >
+              {color}:{n}
+            </span>
+          )
+        })}
+      </div>
+    </div>
   )
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-gray-600">{sv.input.hint}</p>
+      <p className="text-sm text-gray-600">{t('input.hint')}</p>
 
       {/* Top action row: scramble + submit */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 sm:flex-wrap">
@@ -83,49 +127,36 @@ export default function ColorInput({ onSubmit, error, onClearError, isSubmitting
           onClick={handleScramble}
           className="px-5 py-2.5 text-sm font-semibold bg-white border border-[var(--border)] rounded hover:bg-gray-50 transition-colors w-full sm:w-auto"
         >
-          {sv.input.scramble}
+          {t('input.scramble')}
         </button>
         {lastSeed !== null && (
-          <span className="text-xs text-gray-400 font-mono">{sv.input.seed}: {lastSeed}</span>
+          <span className="text-xs text-gray-400 font-mono">{t('input.seed')}: {lastSeed}</span>
         )}
         {submitBtn}
       </div>
 
-      {/* Color palette + live counter */}
-      <div>
-        <p className="text-xs font-medium uppercase tracking-wider text-gray-500 mb-2">{sv.input.palette}</p>
-        <div className="flex gap-2 flex-wrap">
-          {ALL_COLORS.map(color => (
-            <button
-              key={color}
-              onClick={() => setActiveColor(color)}
-              style={{ backgroundColor: color === 'U' ? '#FFFFFF' : FACE_COLORS[color] }}
-              className={`w-8 h-8 rounded transition-all ${
-                activeColor === color
-                  ? 'border-2 border-[var(--fg)] scale-110 shadow-sm'
-                  : 'border-2 border-gray-300'
-              }`}
-              title={sv.input.faceLabels[color]}
+      {palette}
+
+      {/* Mobile: vertical stack of labeled 3x3 grids */}
+      <div className="sm:hidden space-y-4">
+        {FACE_ORDER.map(face => (
+          <div key={face}>
+            <p className="text-xs font-semibold text-[var(--muted)] mb-1.5">
+              {t(`input.faceLabels.${face}`)}
+            </p>
+            <FaceGrid
+              face={face}
+              stickers={stickers[face]}
+              painted={painted}
+              onPaint={(i) => paint(face, i)}
+              stickerSize={44}
             />
-          ))}
-        </div>
-        <div className="flex gap-3 mt-2 flex-wrap">
-          {ALL_COLORS.map(color => {
-            const n = counts[color]
-            return (
-              <span
-                key={color}
-                className={`text-xs font-mono font-semibold ${n === 9 ? 'text-green-600' : 'text-red-600'}`}
-              >
-                {color}:{n}
-              </span>
-            )
-          })}
-        </div>
+          </div>
+        ))}
       </div>
 
-      {/* Unfolded cross layout */}
-      <div className="overflow-x-auto">
+      {/* Desktop: unfolded cross layout */}
+      <div className="hidden sm:block overflow-x-auto">
         <div className="inline-block">
           <div className="flex justify-start pl-[calc(3*2.25rem+3*0.25rem)]">
             <FaceGrid face="U" stickers={stickers.U} painted={painted} onPaint={(i) => paint('U', i)} />
@@ -158,12 +189,14 @@ type FaceGridProps = {
   stickers: Face
   painted: Set<string>
   onPaint: (index: number) => void
+  stickerSize?: number
 }
 
-function FaceGrid({ face, stickers, painted, onPaint }: FaceGridProps) {
+function FaceGrid({ face, stickers, painted, onPaint, stickerSize }: FaceGridProps) {
+  const size = stickerSize ?? 36
   return (
     <div>
-      <div className="text-[10px] font-medium text-gray-500 text-center mb-0.5">
+      <div className="text-[10px] font-medium text-gray-500 text-center mb-0.5 sm:block hidden">
         {face}
       </div>
       <div className="grid grid-cols-3 gap-0.5">
@@ -193,8 +226,8 @@ function FaceGrid({ face, stickers, painted, onPaint }: FaceGridProps) {
               key={i}
               onClick={() => onPaint(i)}
               disabled={isCenter}
-              style={{ backgroundColor: bg }}
-              className={`w-8 h-8 sm:w-9 sm:h-9 rounded-sm border transition-colors ${extraBorder} ${
+              style={{ backgroundColor: bg, width: `${size}px`, height: `${size}px` }}
+              className={`rounded-sm border transition-colors ${extraBorder} ${
                 isCenter ? 'cursor-default opacity-80' : 'hover:opacity-90 cursor-pointer'
               }`}
               title={isCenter ? `${face} (center)` : undefined}

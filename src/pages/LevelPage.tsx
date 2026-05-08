@@ -107,7 +107,7 @@ function LevelCard({
   return (
     <button
       onClick={onChoose}
-      className="flex flex-col gap-3 p-6 border border-[var(--border)] rounded-lg bg-white text-left hover:border-[var(--fg)] hover:shadow-sm active:scale-[0.98] transition-all duration-150 w-full"
+      className="card-base flex flex-col gap-3 text-left hover:shadow-md active:scale-[0.98] transition-all duration-150 w-full"
     >
       <div className="self-center">{preview}</div>
       <div>

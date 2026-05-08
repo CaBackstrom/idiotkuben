@@ -7,8 +7,25 @@
   --muted: #6B6B6B;
   --border: #E5E5E0;
   --font-display: 'Fraunces', serif;
+  --font-sans: 'Inter', sans-serif;
   --font-body: 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
+  --radius-card: 24px;
+}
+
+@layer components {
+  .card-base {
+    background: #ffffff;
+    border-radius: var(--radius-card);
+    border: 1px solid rgba(26,26,26,0.06);
+    box-shadow: 0 1px 2px rgba(26,26,26,0.04), 0 8px 24px rgba(26,26,26,0.06);
+    padding: 2rem;
+  }
+  @media (max-width: 640px) {
+    .card-base {
+      padding: 1.5rem;
+    }
+  }
 }
 
 body {
@@ -55,4 +72,30 @@ body {
 
 .phase-overlay-enter {
   animation: overlay-appear 0.18s ease-out;
+}
+
+@keyframes page-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-content {
+  animation: page-fade-in 0.2s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

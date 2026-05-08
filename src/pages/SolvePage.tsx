@@ -3,9 +3,10 @@ import { loadSession, saveSession } from '../persistence/session'
 import { solveFromState } from '../solver/solve'
 import { solveLayerByLayerPhases } from '../solver/lbl'
 import { sliceIntoPhases, type Phase } from '../solver/phases'
-import { sv } from '../i18n/sv'
+import { useLanguage } from '../context/LanguageContext'
 import SolutionPlayer from '../components/SolutionPlayer'
 import TopNav from '../components/TopNav'
+import ProgressStrip from '../components/layout/ProgressStrip'
 import { type Navigate } from './routes'
 import { track } from '../utils/telemetry'
 
@@ -14,6 +15,7 @@ type Props = {
 }
 
 export default function SolvePage({ navigate }: Props) {
+  const { t } = useLanguage()
   const [phases, setPhases] = useState<Phase[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
@@ -26,7 +28,7 @@ export default function SolvePage({ navigate }: Props) {
   useEffect(() => {
     if (!session) {
       setLoading(false)
-      setError(sv.solve.noSession)
+      setError(t('solve.noSession'))
       return
     }
 
@@ -51,7 +53,7 @@ export default function SolvePage({ navigate }: Props) {
         setTotalPhases(sliced.length)
         setPhases(sliced)
       } catch (e) {
-        setError(sv.solve.error + ' ' + String(e))
+        setError(t('solve.error') + ' ' + String(e))
       } finally {
         setLoading(false)
       }
@@ -66,7 +68,7 @@ export default function SolvePage({ navigate }: Props) {
       <div className="min-h-screen bg-[var(--bg)] font-sans flex flex-col">
         <TopNav navigate={navigate} onBack={() => navigate('/input')} />
         <div className="flex-1 flex items-center justify-center">
-          <p className="text-sm text-[var(--muted)] animate-pulse">{sv.solve.loading}</p>
+          <p className="text-sm text-[var(--muted)] animate-pulse">{t('solve.loading')}</p>
         </div>
       </div>
     )
@@ -77,23 +79,26 @@ export default function SolvePage({ navigate }: Props) {
       <div className="min-h-screen bg-[var(--bg)] font-sans flex flex-col">
         <TopNav navigate={navigate} onBack={() => navigate('/input')} />
         <div className="flex-1 flex flex-col items-center justify-center gap-4 text-[var(--fg)] p-6">
-          <p className="text-sm text-[var(--accent)]">{error ?? sv.solve.noSession}</p>
+          <p className="text-sm text-[var(--accent)]">{error ?? t('solve.noSession')}</p>
           <button
             onClick={() => navigate('/input')}
             className="px-4 py-2 text-sm bg-[var(--fg)] text-white rounded hover:opacity-80 active:scale-[0.98] transition-all duration-150"
           >
-            {sv.solve.goToInput}
+            {t('solve.goToInput')}
           </button>
         </div>
       </div>
     )
   }
 
-  const rightLabel = `Fas ${currentPhase} av ${totalPhases}`
+  const rightLabel = `${t('solve.phase')} ${currentPhase} ${t('solve.of')} ${totalPhases}`
+
+  const progressPct = ((currentPhase - 1) / totalPhases) * 100
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)] font-sans">
       <TopNav navigate={navigate} onBack={() => navigate('/input')} right={rightLabel} />
+      <ProgressStrip pct={progressPct} />
       <div className="p-4 sm:p-6">
         <SolutionPlayer
           initialState={session.cubeState}

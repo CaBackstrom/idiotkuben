@@ -343,7 +343,7 @@ function GuidedPlayer({ initialState, phases, navigate, onPhaseChange, solveStar
           {t(`phases.${currentPhase.id}`)}
         </h2>
 
-        <div ref={instructionRef} className="border border-[var(--border)] rounded-lg p-5 bg-white space-y-3">
+        <div ref={instructionRef} className="card-base space-y-3">
           <div className="flex items-baseline justify-between">
             <p className="text-sm text-[var(--muted)]">
               {phaseProgress} {t('guided.stepOf')}
@@ -567,7 +567,7 @@ function QuickPlayer({ initialState, phases, navigate, onPhaseChange, solveStart
 
       {/* Right: phase info + controls */}
       <div className="space-y-4">
-        <div className="border border-[var(--border)] rounded-lg p-5 bg-white space-y-3">
+        <div className="card-base space-y-3">
           <PhaseTabs
             mode="quick"
             phases={phases}
