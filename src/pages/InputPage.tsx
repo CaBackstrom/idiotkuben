@@ -4,6 +4,7 @@ import { isValidCubeState } from '../cube/validate'
 import { saveSession } from '../persistence/session'
 import { sv } from '../i18n/sv'
 import ColorInput from '../components/ColorInput'
+import TopNav from '../components/TopNav'
 import { type Navigate } from './routes'
 
 type Props = {
@@ -12,6 +13,7 @@ type Props = {
 
 export default function InputPage({ navigate }: Props) {
   const [error, setError] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
 
   function handleSubmit(state: CubeState) {
     setError(null)
@@ -33,13 +35,27 @@ export default function InputPage({ navigate }: Props) {
       startedAt: new Date().toISOString(),
       frustrationCount: { phase1: 0, phase2: 0, phase3: 0, phase4: 0 },
     })
-    navigate('/solve')
+    setSubmitting(true)
+    setTimeout(() => navigate('/solve'), 80)
   }
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)] p-6 font-sans">
-      <h1 className="text-3xl font-bold tracking-tight mb-6" style={{ fontFamily: 'var(--font-display)' }}>{sv.input.title}</h1>
-      <ColorInput onSubmit={handleSubmit} error={error} onClearError={() => setError(null)} />
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)] font-sans">
+      <TopNav navigate={navigate} onBack={() => navigate('/level')} right={sv.nav.pages.input} />
+      <div className="p-6">
+        <h1
+          className="font-bold tracking-tight mb-6"
+          style={{ fontFamily: 'var(--font-display)', fontSize: '3rem' }}
+        >
+          {sv.input.title}
+        </h1>
+        <ColorInput
+          onSubmit={handleSubmit}
+          error={error}
+          onClearError={() => setError(null)}
+          isSubmitting={submitting}
+        />
+      </div>
     </div>
   )
 }

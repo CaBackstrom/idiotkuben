@@ -3,23 +3,50 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import type { Navigate } from './routes'
 import { sv } from '../i18n/sv'
+import { solvedState, FACE_COLORS, type CubeState } from '../cube/CubeState'
+import { mulberry32 } from '../cube/prng'
+import { Moves, ALL_MOVES } from '../cube/moves'
+import TopNav from '../components/TopNav'
 
-// ── Solved cube mesh builder ──────────────────────────────────────────────────
+// ── Scrambled state (seed 29810, 20 moves) ───────────────────────────────────
 
-function buildSolvedCubie(px: number, py: number, pz: number): THREE.Mesh {
+function makeScrambledState(): CubeState {
+  const rand = mulberry32(29810)
+  let state = solvedState()
+  for (let i = 0; i < 20; i++) {
+    state = Moves[ALL_MOVES[Math.floor(rand() * ALL_MOVES.length)]](state)
+  }
+  return state
+}
+
+const SCRAMBLED_STATE = makeScrambledState()
+
+// ── Cube mesh builder ─────────────────────────────────────────────────────────
+
+function faceIndex(face: keyof CubeState, px: number, py: number, pz: number): number {
+  switch (face) {
+    case 'U': return (pz + 1) * 3 + (px + 1)
+    case 'D': return (1 - pz) * 3 + (px + 1)
+    case 'F': return (1 - py) * 3 + (px + 1)
+    case 'B': return (1 - py) * 3 + (1 - px)
+    case 'R': return (1 - py) * 3 + (1 - pz)
+    case 'L': return (1 - py) * 3 + (pz + 1)
+  }
+}
+
+function buildCubie(px: number, py: number, pz: number, state: CubeState): THREE.Mesh {
   const geo = new THREE.BoxGeometry(0.95, 0.95, 0.95)
-  // BoxGeometry face order: +X, -X, +Y, -Y, +Z, -Z (4 verts each)
-  const faceColors = [
-    px ===  1 ? '#B71234' : '#111111',
-    px === -1 ? '#FF5800' : '#111111',
-    py ===  1 ? '#FFFFFF' : '#111111',
-    py === -1 ? '#FFCC00' : '#111111',
-    pz ===  1 ? '#009B48' : '#111111',
-    pz === -1 ? '#0046AD' : '#111111',
+  const faceHexes = [
+    px ===  1 ? FACE_COLORS[state.R[faceIndex('R', px, py, pz)]] : '#111111',
+    px === -1 ? FACE_COLORS[state.L[faceIndex('L', px, py, pz)]] : '#111111',
+    py ===  1 ? FACE_COLORS[state.U[faceIndex('U', px, py, pz)]] : '#111111',
+    py === -1 ? FACE_COLORS[state.D[faceIndex('D', px, py, pz)]] : '#111111',
+    pz ===  1 ? FACE_COLORS[state.F[faceIndex('F', px, py, pz)]] : '#111111',
+    pz === -1 ? FACE_COLORS[state.B[faceIndex('B', px, py, pz)]] : '#111111',
   ]
   const count = (geo.attributes['position'] as THREE.BufferAttribute).count
   const colors = new Float32Array(count * 3)
-  faceColors.forEach((hex, f) => {
+  faceHexes.forEach((hex, f) => {
     const c = new THREE.Color(hex)
     for (let v = f * 4; v < (f + 1) * 4; v++) {
       colors[v * 3] = c.r; colors[v * 3 + 1] = c.g; colors[v * 3 + 2] = c.b
@@ -43,7 +70,7 @@ function LandingCubeScene({ scrollRef, mobile }: SceneProps) {
     for (let y = -1; y <= 1; y++)
       for (let z = -1; z <= 1; z++)
         for (let x = -1; x <= 1; x++) {
-          const mesh = buildSolvedCubie(x, y, z)
+          const mesh = buildCubie(x, y, z, SCRAMBLED_STATE)
           mesh.position.set(x, y, z)
           group.add(mesh)
         }
@@ -112,8 +139,9 @@ export default function LandingPage({ navigate }: { navigate: Navigate }) {
     ? [1, 1, 1]
     : [textOp(0, 0.45, progress), textOp(0.3, 0.75, progress), textOp(0.6, 1.0, progress)]
 
+  // Camera pulled back to [5, 4, 5] so the cube fits fully within the canvas
   const canvas = (
-    <Canvas camera={{ position: [3.5, 3.5, 3.5], fov: 45 }}>
+    <Canvas camera={{ position: [5, 4, 5], fov: 45 }}>
       <ambientLight intensity={0.6} />
       <directionalLight position={[5, 8, 5]} intensity={0.9} />
       <LandingCubeScene scrollRef={scrollRef} mobile={mobile} />
@@ -122,30 +150,28 @@ export default function LandingPage({ navigate }: { navigate: Navigate }) {
 
   return (
     <div className="bg-[var(--bg)] text-[var(--fg)] font-sans">
-      {/* Header */}
-      <header className="px-8 py-5">
-        <span className="text-xl font-bold" style={{ fontFamily: 'var(--font-display)' }}>
-          Idiotkuben
-        </span>
-      </header>
+      <TopNav navigate={navigate} />
 
       {/* Hero — mobile */}
       {mobile && (
         <section className="flex flex-col">
-          <div style={{ height: '60vh', background: 'var(--bg)' }}>
+          <div className="px-8 pt-10 pb-4">
+            <h1
+              className="font-bold leading-none"
+              style={{ fontFamily: 'var(--font-display)', fontSize: '3.5rem' }}
+            >
+              Idiotkuben
+            </h1>
+          </div>
+          <div style={{ height: '55vh', background: 'var(--bg)' }}>
             {canvas}
           </div>
           <div className="px-8 py-8">
-            <h1
-              className="font-bold leading-tight text-4xl"
-              style={{ fontFamily: 'var(--font-display)' }}
-            >
+            <p className="font-bold text-xl leading-snug" style={{ fontFamily: 'var(--font-display)' }}>
               {sv.landing.hero1}
-              <br />
-              {sv.landing.hero2}
-              <br />
-              {sv.landing.hero3}
-            </h1>
+              <br />{sv.landing.hero2}
+              <br />{sv.landing.hero3}
+            </p>
           </div>
         </section>
       )}
@@ -155,30 +181,43 @@ export default function LandingPage({ navigate }: { navigate: Navigate }) {
         <section ref={heroRef} style={{ height: '300vh' }}>
           <div
             className="flex overflow-hidden"
-            style={{ position: 'sticky', top: 0, height: '100vh' }}
+            style={{ position: 'sticky', top: '56px', height: 'calc(100vh - 56px)' }}
           >
-            {/* Text column */}
-            <div className="relative" style={{ width: '45%', height: '100%' }}>
-              {texts.map((text, i) => (
-                <div
-                  key={i}
-                  className="absolute inset-0 flex items-center"
-                  style={{ opacity: opacities[i], paddingLeft: '10%', paddingRight: '6%' }}
-                >
+            {/* Left: large title + scroll taglines */}
+            <div
+              className="relative flex flex-col justify-center"
+              style={{ width: '45%', height: '100%', paddingLeft: '10%', paddingRight: '6%' }}
+            >
+              <h1
+                className="font-bold leading-none mb-6"
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 'clamp(4rem, 6vw, 6rem)',
+                }}
+              >
+                Idiotkuben
+              </h1>
+
+              {/* Taglines — one visible at a time, scroll-driven */}
+              <div className="relative" style={{ height: '2.5em' }}>
+                {texts.map((text, i) => (
                   <p
-                    className="font-bold leading-tight"
+                    key={i}
+                    className="absolute top-0 left-0 font-medium leading-snug"
                     style={{
+                      opacity: opacities[i],
                       fontFamily: 'var(--font-display)',
-                      fontSize: 'clamp(2rem, 4vw, 3.75rem)',
+                      fontSize: 'clamp(1.25rem, 2vw, 1.75rem)',
+                      color: 'var(--muted)',
                     }}
                   >
                     {text}
                   </p>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
-            {/* Canvas column */}
+            {/* Right: canvas — 55% wide, cube ~40% of viewport */}
             <div
               className="relative"
               style={{ width: '55%', height: '100%', background: 'var(--bg)' }}

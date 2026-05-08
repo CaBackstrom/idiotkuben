@@ -2,6 +2,7 @@ import { sv } from '../i18n/sv'
 import { loadSession, saveSession } from '../persistence/session'
 import { type Navigate } from './routes'
 import { track } from '../utils/telemetry'
+import TopNav from '../components/TopNav'
 
 type Props = {
   navigate: Navigate
@@ -23,7 +24,7 @@ function LevelCard({
   return (
     <button
       onClick={onChoose}
-      className="flex flex-col gap-4 p-6 border border-[var(--border)] rounded-lg bg-white text-left hover:border-[var(--fg)] hover:shadow-sm transition-all w-full"
+      className="flex flex-col gap-4 p-6 border border-[var(--border)] rounded-lg bg-white text-left hover:border-[var(--fg)] hover:shadow-sm active:scale-[0.98] transition-all duration-150 w-full"
     >
       <div>
         <h2 className="text-xl font-semibold text-[var(--fg)]" style={{ fontFamily: 'var(--font-display)' }}>
@@ -51,30 +52,33 @@ export default function LevelPage({ navigate }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)] p-6 font-sans">
-      <div className="max-w-2xl mx-auto">
-        <h1
-          className="text-3xl font-bold mb-2"
-          style={{ fontFamily: 'var(--font-display)' }}
-        >
-          {sv.level.title}
-        </h1>
-        <p className="text-sm text-[var(--muted)] mb-8">
-          Välj hur du vill lösa din kub.
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <LevelCard
-            name={sv.level.beginnerName}
-            desc={sv.level.beginnerDesc}
-            moves={sv.level.beginnerMoves}
-            onChoose={() => choose('guided')}
-          />
-          <LevelCard
-            name={sv.level.advancedName}
-            desc={sv.level.advancedDesc}
-            moves={sv.level.advancedMoves}
-            onChoose={() => choose('quick')}
-          />
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)] font-sans">
+      <TopNav navigate={navigate} onBack={() => navigate('/')} right={sv.nav.pages.level} />
+      <div className="p-6">
+        <div className="max-w-2xl mx-auto">
+          <h1
+            className="font-bold mb-2"
+            style={{ fontFamily: 'var(--font-display)', fontSize: '3rem' }}
+          >
+            {sv.level.title}
+          </h1>
+          <p className="text-sm text-[var(--muted)] mb-8">
+            {sv.level.chooseDesc}
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <LevelCard
+              name={sv.level.beginnerName}
+              desc={sv.level.beginnerDesc}
+              moves={sv.level.beginnerMoves}
+              onChoose={() => choose('guided')}
+            />
+            <LevelCard
+              name={sv.level.advancedName}
+              desc={sv.level.advancedDesc}
+              moves={sv.level.advancedMoves}
+              onChoose={() => choose('quick')}
+            />
+          </div>
         </div>
       </div>
     </div>

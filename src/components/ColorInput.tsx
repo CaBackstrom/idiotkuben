@@ -10,13 +10,14 @@ type Props = {
   onSubmit: (state: CubeState) => void
   error: string | null
   onClearError: () => void
+  isSubmitting?: boolean
 }
 
 function stickerKey(face: keyof CubeState, index: number): string {
   return `${face}-${index}`
 }
 
-export default function ColorInput({ onSubmit, error, onClearError }: Props) {
+export default function ColorInput({ onSubmit, error, onClearError, isSubmitting = false }: Props) {
   const [stickers, setStickers] = useState<CubeState>(solvedState)
   const [activeColor, setActiveColor] = useState<StickerColor>('U')
   const [painted, setPainted] = useState<Set<string>>(() => new Set())
@@ -65,9 +66,10 @@ export default function ColorInput({ onSubmit, error, onClearError }: Props) {
   const submitBtn = (
     <button
       onClick={handleSubmit}
-      className="px-5 py-2.5 text-sm font-semibold bg-[var(--accent)] text-white rounded hover:opacity-90 transition-opacity w-full sm:w-auto"
+      disabled={isSubmitting}
+      className="px-5 py-2.5 text-sm font-semibold bg-[var(--accent)] text-white rounded hover:opacity-90 hover:shadow-sm disabled:opacity-60 active:scale-[0.98] transition-all duration-150 w-full sm:w-auto"
     >
-      {sv.input.submit}
+      {isSubmitting ? sv.input.solving : sv.input.submit}
     </button>
   )
 

@@ -5,6 +5,7 @@ import { solveLayerByLayerPhases } from '../solver/lbl'
 import { sliceIntoPhases, type Phase } from '../solver/phases'
 import { sv } from '../i18n/sv'
 import SolutionPlayer from '../components/SolutionPlayer'
+import TopNav from '../components/TopNav'
 import { type Navigate } from './routes'
 import { track } from '../utils/telemetry'
 
@@ -17,6 +18,8 @@ export default function SolvePage({ navigate }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [solverMode, setSolverMode] = useState<'guided' | 'quick'>('quick')
+  const [currentPhase, setCurrentPhase] = useState(1)
+  const [totalPhases, setTotalPhases] = useState(4)
 
   const session = loadSession()
 
@@ -45,6 +48,7 @@ export default function SolvePage({ navigate }: Props) {
         }
         saveSession({ ...session, solution: moves })
         track('solve_started')
+        setTotalPhases(sliced.length)
         setPhases(sliced)
       } catch (e) {
         setError(sv.solve.error + ' ' + String(e))
@@ -59,33 +63,52 @@ export default function SolvePage({ navigate }: Props) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[var(--bg)] flex items-center justify-center text-[var(--fg)] font-sans">
-        <p className="text-sm text-[var(--muted)]">{sv.solve.loading}</p>
+      <div className="min-h-screen bg-[var(--bg)] font-sans">
+        <TopNav navigate={navigate} onBack={() => navigate('/input')} />
+        <div
+          className="flex items-center justify-center"
+          style={{ minHeight: 'calc(100vh - 56px)' }}
+        >
+          <p className="text-sm text-[var(--muted)] animate-pulse">{sv.solve.loading}</p>
+        </div>
       </div>
     )
   }
 
   if (error || !session || !phases) {
     return (
-      <div className="min-h-screen bg-[var(--bg)] flex flex-col items-center justify-center gap-4 text-[var(--fg)] font-sans p-6">
-        <p className="text-sm text-[var(--accent)]">{error ?? sv.solve.noSession}</p>
-        <button
-          onClick={() => navigate('/input')}
-          className="px-4 py-2 text-sm bg-[var(--fg)] text-white rounded hover:opacity-80 transition-opacity"
+      <div className="min-h-screen bg-[var(--bg)] font-sans">
+        <TopNav navigate={navigate} onBack={() => navigate('/input')} />
+        <div
+          className="flex flex-col items-center justify-center gap-4 text-[var(--fg)] p-6"
+          style={{ minHeight: 'calc(100vh - 56px)' }}
         >
-          {sv.solve.goToInput}
-        </button>
+          <p className="text-sm text-[var(--accent)]">{error ?? sv.solve.noSession}</p>
+          <button
+            onClick={() => navigate('/input')}
+            className="px-4 py-2 text-sm bg-[var(--fg)] text-white rounded hover:opacity-80 active:scale-[0.98] transition-all duration-150"
+          >
+            {sv.solve.goToInput}
+          </button>
+        </div>
       </div>
     )
   }
 
+  const rightLabel = `Fas ${currentPhase} av ${totalPhases}`
+
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)] p-4 sm:p-6 font-sans">
-      <SolutionPlayer
-        initialState={session.cubeState}
-        phases={phases}
-        mode={solverMode}
-      />
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)] font-sans">
+      <TopNav navigate={navigate} onBack={() => navigate('/input')} right={rightLabel} />
+      <div className="p-4 sm:p-6">
+        <SolutionPlayer
+          initialState={session.cubeState}
+          phases={phases}
+          mode={solverMode}
+          navigate={navigate}
+          onPhaseChange={setCurrentPhase}
+        />
+      </div>
     </div>
   )
 }

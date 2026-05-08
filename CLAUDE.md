@@ -152,3 +152,44 @@ cloudflare-worker/
   wrangler.toml                 — Worker config with AI binding
   package.json                  — Worker package (wrangler dev dependency)
 ```
+
+## Milestone 5 — done
+
+- [x] TopNav component (src/components/TopNav.tsx) — sticky 56px nav on all pages
+- [x] "← Tillbaka" back navigation: /level→/, /input→/level, /solve→/input
+- [x] LandingPage: wordmark-only TopNav, hero sticky offset adjusted for nav height
+- [x] Sticky cube on /solve — 2-column grid, cube md:sticky md:top-20
+- [x] Phase completion overlay (PhaseOverlay) — fades in/out after 1.5s
+- [x] Smooth animated progress bar with brief glow pulse
+- [x] Move milestone indicator every 10 moves ("Drag 10 ✓")
+- [x] Final celebration: CSS confetti (15 mobile / 30 desktop), elapsed time, move count
+- [x] "Lös en till" and "Tillbaka till start" buttons on celebration screen
+- [x] Phase stepper redesign: completed=filled+checkmark, active=accent border, future=muted
+- [x] Button polish: active:scale-[0.98], hover:shadow-sm on all interactive buttons
+- [x] Typography: H1 3rem/Fraunces on LevelPage+InputPage, H2 2rem/Fraunces for phase name
+- [x] Loading state on "Lös min kub" button (brief submitting state before navigate)
+- [x] SolvePage TopNav shows dynamic "Fas X av 4" via onPhaseChange callback
+- [x] No new dependencies
+- [x] 32 unit tests passing
+- [x] npm run build — clean
+- [x] Deployed: idiotkuben.pages.dev
+
+## File additions in Milestone 5
+
+```
+src/components/TopNav.tsx       — sticky top navigation bar
+```
+
+## Files modified in Milestone 5
+
+```
+src/i18n/sv.ts                  — nav, phaseComplete, solve celebration strings
+src/index.css                   — confetti-fall + overlay-appear keyframes
+src/components/PhaseProgress.tsx — redesigned stepper (desktop boxes + mobile dots)
+src/components/SolutionPlayer.tsx — sticky layout, overlays, celebration, timer
+src/pages/SolvePage.tsx         — TopNav, navigate prop, onPhaseChange callback
+src/pages/LevelPage.tsx         — TopNav, typography, chooseDesc to sv.ts
+src/pages/InputPage.tsx         — TopNav, submitting state
+src/pages/LandingPage.tsx       — TopNav (wordmark only), hero offset fix
+src/components/ColorInput.tsx   — isSubmitting prop on submit button
+```

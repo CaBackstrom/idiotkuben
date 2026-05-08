@@ -1,4 +1,17 @@
 export const sv = {
+  nav: {
+    back: 'Tillbaka',
+    wordmark: 'Idiotkuben',
+    pages: {
+      level: 'Välj nivå',
+      input: 'Mata in din kub',
+      solve: 'Löser kuben',
+    },
+  },
+  phaseComplete: {
+    prefix: 'Fas',
+    suffix: 'klar',
+  },
   demo: {
     title: 'Idiotkuben — Milstolpe 1 Demo',
     moves: 'Drag',
@@ -51,6 +64,12 @@ export const sv = {
     error: 'Kunde inte lösa kuben.',
     noSession: 'Ingen aktiv session.',
     goToInput: 'Mata in kub',
+    solveAnother: 'Lös en till',
+    backToStart: 'Tillbaka till start',
+    celebrationDone: 'Du klarade det på',
+    celebrationMovesUnit: 'drag och',
+    celebrationMinutes: 'minuter',
+    celebrationSeconds: 'sekunder',
   },
   continue: {
     title: 'Du har en pågående lösning',
@@ -72,6 +91,7 @@ export const sv = {
     advancedDesc: 'Optimal lösning. Du gör allt i din takt.',
     advancedMoves: '~20 drag',
     choose: 'Välj',
+    chooseDesc: 'Välj hur du vill lösa din kub.',
   },
   moves: {
     U: 'Vrid toppen medsols',

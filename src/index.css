@@ -17,3 +17,42 @@ body {
   color: var(--fg);
   font-family: var(--font-body);
 }
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-12px) rotate(0deg);
+    opacity: 1;
+  }
+  80% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(100vh) rotate(480deg);
+    opacity: 0;
+  }
+}
+
+.confetti-particle {
+  position: fixed;
+  top: 0;
+  background: var(--accent);
+  animation: confetti-fall 2s ease-in forwards;
+  pointer-events: none;
+  z-index: 100;
+  border-radius: 1px;
+}
+
+@keyframes overlay-appear {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.phase-overlay-enter {
+  animation: overlay-appear 0.18s ease-out;
+}
