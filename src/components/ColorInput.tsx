@@ -184,8 +184,6 @@ export default function ColorInput({ onSubmit, error, onClearError, isSubmitting
             {error}
           </div>
         )}
-
-        {submitBtn}
       </div>
 
       {/* Right column: cube net, desktop only (lg+) */}
@@ -208,7 +206,7 @@ function FaceGrid({ face, stickers, painted, onPaint, compact = false }: FaceGri
   const cellClass = compact ? 'w-6 h-6' : 'w-7 h-7'
 
   return (
-    <div className="grid grid-cols-3 gap-0.5">
+    <div className="w-fit grid grid-cols-3 gap-0.5">
       {stickers.map((color, i) => {
         const isCenter = i === 4
         const isPainted = isCenter || painted.has(`${face}-${i}`)

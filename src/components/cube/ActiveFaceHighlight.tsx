@@ -26,7 +26,7 @@ const FACE_THREE_COLORS: Record<StickerColor, THREE.Color> = Object.fromEntries(
 ) as Record<StickerColor, THREE.Color>
 
 // Dim overlay opacity for inactive faces (semi-transparent black)
-const DIM_OPACITY = 0.38
+const DIM_OPACITY = 0.5
 
 export default function ActiveFaceHighlight({ face, animating }: Props) {
   const { scene } = useThree()
@@ -49,7 +49,7 @@ export default function ActiveFaceHighlight({ face, animating }: Props) {
         transparent: true,
         opacity: 0,
         depthWrite: false,
-        side: THREE.FrontSide,
+        side: THREE.DoubleSide,
       })
       const mesh = new THREE.Mesh(geo, mat)
       mesh.position.set(...pos)
@@ -86,10 +86,10 @@ export default function ActiveFaceHighlight({ face, animating }: Props) {
       const mat = mesh.material as THREE.MeshBasicMaterial
 
       if (f === activeFace) {
-        // Glow: active face center color, pulse opacity 0.05 → 0.15 over 1.6s
+        // Glow: active face center color, pulse opacity 0.15 → 0.45 over 1.4s
         mat.color.copy(FACE_THREE_COLORS[f])
-        const pulse = (Math.sin((elapsedRef.current * Math.PI * 2) / 1.6) + 1) / 2
-        const target = 0.05 + pulse * 0.10
+        const pulse = (Math.sin((elapsedRef.current * Math.PI * 2) / 1.4) + 1) / 2
+        const target = 0.15 + pulse * 0.30
         mat.opacity += (target - mat.opacity) * lerpFactor
       } else {
         // Dim: black overlay fades in to DIM_OPACITY over 400ms
