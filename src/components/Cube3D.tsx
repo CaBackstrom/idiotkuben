@@ -288,6 +288,59 @@ function FaceTracker({ badgeRef }: { badgeRef: React.RefObject<HTMLDivElement | 
   return null
 }
 
+// ── Solved celebration: all-face glow ─────────────────────────────────────
+
+const CELEBRATION_FACE_CONFIGS: Array<{ pos: [number, number, number]; rot: [number, number, number]; color: StickerColor }> = [
+  { pos: [0, 1.53, 0],  rot: [-Math.PI / 2, 0, 0], color: 'U' },
+  { pos: [0, -1.53, 0], rot: [Math.PI / 2, 0, 0],  color: 'D' },
+  { pos: [0, 0, 1.53],  rot: [0, 0, 0],             color: 'F' },
+  { pos: [0, 0, -1.53], rot: [0, Math.PI, 0],       color: 'B' },
+  { pos: [1.53, 0, 0],  rot: [0, Math.PI / 2, 0],   color: 'R' },
+  { pos: [-1.53, 0, 0], rot: [0, -Math.PI / 2, 0],  color: 'L' },
+]
+
+// All 6 faces glow in their center color: fade in 1.2s, hold 2s, fade out 0.8s
+function SolvedCelebrationOverlay() {
+  const { scene } = useThree()
+  const meshesRef = useRef<THREE.Mesh[]>([])
+  const startRef = useRef(Date.now())
+
+  useEffect(() => {
+    const meshes: THREE.Mesh[] = []
+    for (const { pos, rot, color } of CELEBRATION_FACE_CONFIGS) {
+      const geo = new THREE.PlaneGeometry(3.1, 3.1)
+      const mat = new THREE.MeshBasicMaterial({
+        color: new THREE.Color(FACE_COLORS[color]),
+        transparent: true,
+        opacity: 0,
+        depthWrite: false,
+      })
+      const mesh = new THREE.Mesh(geo, mat)
+      mesh.position.set(...pos)
+      mesh.rotation.set(...rot)
+      scene.add(mesh)
+      meshes.push(mesh)
+    }
+    meshesRef.current = meshes
+    return () => {
+      meshes.forEach(m => { scene.remove(m); m.geometry.dispose(); (m.material as THREE.Material).dispose() })
+      meshesRef.current = []
+    }
+  }, [scene])
+
+  useFrame(() => {
+    const t = (Date.now() - startRef.current) / 1000
+    let opacity: number
+    if (t < 1.2) opacity = (t / 1.2) * 0.25
+    else if (t < 3.2) opacity = 0.25
+    else if (t < 4.0) opacity = (1 - (t - 3.2) / 0.8) * 0.25
+    else opacity = 0
+    meshesRef.current.forEach(m => { (m.material as THREE.MeshBasicMaterial).opacity = opacity })
+  })
+
+  return null
+}
+
 // ── Public component ───────────────────────────────────────────────────────
 
 type Cube3DProps = {
@@ -299,11 +352,12 @@ type Cube3DProps = {
   activeFace?: StickerColor
   showOrientationBadge?: boolean
   isAnimating?: boolean
+  celebrationMode?: boolean
 }
 
 export default function Cube3D({
   initialState, moveQueue, onMoveComplete, groupRef,
-  quality: _quality, activeFace, showOrientationBadge, isAnimating = false,
+  quality: _quality, activeFace, showOrientationBadge, isAnimating = false, celebrationMode = false,
 }: Cube3DProps) {
   const badgeRef = useRef<HTMLDivElement | null>(null)
   const [hovered, setHovered] = useState(false)
@@ -332,8 +386,9 @@ export default function Cube3D({
           groupRef={groupRef}
         />
         {activeFace && <ActiveFaceHighlight face={activeFace} animating={isAnimating} />}
+        {celebrationMode && <SolvedCelebrationOverlay />}
         {showOrientationBadge && <FaceTracker badgeRef={badgeRef} />}
-        <OrbitControls makeDefault />
+        <OrbitControls makeDefault autoRotate={celebrationMode} autoRotateSpeed={15} />
       </Canvas>
       {showOrientationBadge && <OrientationBadge ref={badgeRef} />}
     </div>

@@ -54,14 +54,18 @@ function startStateFor(phaseIdx: number, initialState: CubeState, phases: Phase[
   return phaseIdx === 0 ? initialState : phases[phaseIdx - 1].stateAfter
 }
 
+const RUBIK_COLORS = ['#FFFFFF', '#C8102E', '#009B48', '#FFCC00', '#FF5800', '#0046AD']
+
 function makeConfetti() {
   const rand = mulberry32(42)
-  const count = typeof window !== 'undefined' && window.innerWidth < 768 ? 15 : 30
-  return Array.from({ length: count }, (_, i) => ({
+  return Array.from({ length: 40 }, (_, i) => ({
     id: i,
     left: rand() * 100,
-    delay: rand() * 1.5,
-    size: 6 + rand() * 6,
+    delay: 0.4 + rand() * 1.5,
+    size: [8, 12, 16][Math.floor(rand() * 3)],
+    color: RUBIK_COLORS[Math.floor(rand() * RUBIK_COLORS.length)],
+    drift: (rand() - 0.5) * 80,
+    rotateDir: rand() > 0.5 ? 1 : -1,
   }))
 }
 
@@ -103,9 +107,12 @@ function Confetti({ particles }: { particles: ReturnType<typeof makeConfetti> })
           style={{
             left: `${p.left}%`,
             animationDelay: `${p.delay.toFixed(2)}s`,
-            width: `${p.size.toFixed(0)}px`,
-            height: `${p.size.toFixed(0)}px`,
-          }}
+            width: `${p.size}px`,
+            height: `${p.size}px`,
+            backgroundColor: p.color,
+            '--drift': `${p.drift}px`,
+            '--rotate-dir': p.rotateDir,
+          } as React.CSSProperties}
         />
       ))}
     </>
@@ -264,6 +271,7 @@ function GuidedPlayer({ initialState, phases, navigate, onPhaseChange, solveStar
               moveQueue={[]}
               onMoveComplete={handleMoveComplete}
               groupRef={groupRef}
+              celebrationMode
             />
           </div>
           <PhaseProgress currentPhase={4 as 1 | 2 | 3 | 4} phases={phases} />
@@ -514,6 +522,7 @@ function QuickPlayer({ initialState, phases, navigate, onPhaseChange, solveStart
               moveQueue={[]}
               onMoveComplete={handleMoveComplete}
               groupRef={groupRef}
+              celebrationMode
             />
           </div>
           <PhaseProgress currentPhase={4 as 1 | 2 | 3 | 4} phases={phases} />
