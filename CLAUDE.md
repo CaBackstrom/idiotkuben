@@ -291,3 +291,31 @@ src/pages/SolvePage.tsx         — ProgressStrip
 src/i18n/index.ts               — A1/A3 strings (instructions, F2L/OLL/PLL, Kociemba)
 src/index.css                   — card-base utility, radius-card token, overlay spring animation
 ```
+
+## Milestone 9 — done
+
+- [x] A1: White halo replaces dim-overlay active face highlight — white additive-blended plane per face, pulses 0.4–0.85 opacity and 1.15–1.22x scale over 1.4s with soft radial gradient texture
+- [x] A2: Removed all dim-overlay and per-sticker emissive code (was entirely in ActiveFaceHighlight.tsx)
+- [x] B1: Inline howToUse + keyboardHint instruction text added below the holding hint
+- [x] B2: Keyboard shortcuts 1–6 switch brush color; useColorShortcuts hook; brief scale flash confirms
+- [x] B3: Double-click on any cell fills the entire face with current brush color (center locked)
+- [x] B4: Live count validation — Solve button disabled + inline error message when any color count != 9
+- [x] B5: Cell borders tightened — rgba values for empty/filled/center, more contrast against background
+- [x] 77 unit tests passing
+- [x] npm run build — clean
+
+## File additions in Milestone 9
+
+```
+src/components/cube/__tests__/ActiveFaceHighlight.test.ts — face config position/rotation tests
+src/hooks/useColorShortcuts.ts          — buildColorShortcutHandler + useColorShortcuts hook
+src/hooks/__tests__/useColorShortcuts.test.ts — 4 pure handler tests
+```
+
+## Files modified in Milestone 9
+
+```
+src/components/cube/ActiveFaceHighlight.tsx — full rewrite: halo only, no dim overlays
+src/components/ColorInput.tsx               — B1 text, B2 hook, B3 dblclick, B4 validation, B5 borders
+src/i18n/index.ts                           — howToUse, keyboardHint, validationExact/TooMany/TooFew, colorNames
+```
