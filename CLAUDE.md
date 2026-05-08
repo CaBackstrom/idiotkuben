@@ -193,3 +193,101 @@ src/pages/InputPage.tsx         — TopNav, submitting state
 src/pages/LandingPage.tsx       — TopNav (wordmark only), hero offset fix
 src/components/ColorInput.tsx   — isSubmitting prop on submit button
 ```
+
+## Milestone 6 — done
+
+- [x] Language switcher (EN/SV) in TopNav — EN default, persists to localStorage
+- [x] All UI strings via t() — zero hardcoded strings in components
+- [x] src/i18n/index.ts — bilingual translations (EN + SV), dot-path t() function
+- [x] src/context/LanguageContext.tsx — React context + useLanguage() hook
+- [x] Worker accepts language param — responds in EN or SV accordingly
+- [x] Mobile cross-input — vertical stack at <640px, 44px stickers, sticky palette
+- [x] Cube3D — dynamic REDUCED_MOTION check, explicit Canvas dimensions + dpr for mobile
+- [x] Landing page — self-solving cube (LBL solution mapped to scroll on desktop, loop on mobile)
+- [x] Sound toggle in TopNav — Web Audio API, default off, 4 sound events
+- [x] Onboarding previews on level cards — inline SVG mini-previews
+- [x] Proactive tutor — fires after 3 back-clicks on same move, dismissible card
+- [x] Page transitions — 200ms fade-in via .page-content class
+- [x] Tutor empty state and friendly error messages
+- [x] 32 unit tests passing
+- [x] npm run build — clean
+- [x] Worker redeployed: idiotkuben-tutor.carl-backstrom.workers.dev
+- [x] Frontend deployed: idiotkuben.pages.dev
+
+## File additions in Milestone 6
+
+```
+src/i18n/index.ts               — bilingual translations (EN/SV) + t() function
+src/context/LanguageContext.tsx — LanguageProvider + useLanguage() hook
+src/utils/sounds.ts             — Web Audio API sound effects
+```
+
+## Files modified in Milestone 6
+
+```
+src/components/TopNav.tsx       — EN/SV language toggle + sound toggle
+src/components/SolutionPlayer.tsx — useLanguage, sounds, proactive tutor
+src/components/TutorPanel.tsx   — useLanguage, autoQuestion prop, sounds, empty state
+src/components/ColorInput.tsx   — useLanguage, mobile vertical stack layout
+src/components/PhaseProgress.tsx — useLanguage
+src/components/StorageBanner.tsx — useLanguage
+src/components/ContinuePrompt.tsx — useLanguage
+src/components/DemoPage.tsx     — useLanguage
+src/pages/LandingPage.tsx       — useLanguage, self-solving cube
+src/pages/LevelPage.tsx         — useLanguage, level card SVG previews
+src/pages/InputPage.tsx         — useLanguage
+src/pages/SolvePage.tsx         — useLanguage
+src/App.tsx                     — LanguageProvider wrap, page transitions
+src/index.css                   — page-fade-in + fadeInUp keyframes
+cloudflare-worker/src/index.ts  — language-aware system prompt
+```
+
+## Milestone 7 — done
+
+- [x] A1: getInstructionForMove() — color-based instructions + move codes (EN/SV)
+- [x] A2: useFrontFace + ActiveFaceHighlight + OrientationBadge — active face pulsing, front/top badge
+- [x] A3: PhaseTabs — quick mode shows single "Optimal solution" + Kociemba chip; guided mode shows F2L/OLL/PLL terminology
+- [x] A4: BeginnerPreview SVG — R marker and arrow aligned inside grid cell
+- [x] B1: MeshAura — soft radial gradient aura behind cube on landing page
+- [x] B2: Hero typography — italic Fraunces + Inter bold uppercase contrast
+- [x] B3: card-base utility — 24px radius, soft shadow, consistent across cards
+- [x] B4: Glassmorphism CTA — landing hero button gets backdrop-filter blur
+- [x] B5: Vertical rhythm — section padding increased
+- [x] B6: Color picker circles — 44px circles with inner ring on selected
+- [x] B7: ProgressStrip — 2px strip below TopNav on /solve, 600ms animated
+- [x] C1: Button scale — active:scale-[0.97] across all interactive buttons
+- [x] C2: Page transitions — pure opacity fade-in 200ms (no translateY)
+- [x] C3: Phase overlay — backdrop blur(4px), spring card animation, 1.8s auto-dismiss + click-dismiss
+- [x] C4: Cube hover glow — CSS box-shadow rgba(200,16,46,0.15), 200ms in / 300ms out
+- [x] 56 unit tests passing
+- [x] npm run build — clean
+
+## File additions in Milestone 7
+
+```
+src/solver/instructions.ts              — getInstructionForMove() EN/SV
+src/solver/__tests__/instructions.test.ts — 8 tests, all 18 moves
+src/hooks/useFrontFace.ts               — computeFrontAndTop() + useFrontFace() hook
+src/hooks/__tests__/useFrontFace.test.ts — 9 tests, cardinal + oblique positions
+src/components/cube/ActiveFaceHighlight.tsx — pulsing outline on active face
+src/components/cube/OrientationBadge.tsx    — HTML overlay showing front/top face
+src/components/solve/PhaseTabs.tsx      — mode-aware phase header component
+src/components/solve/PhaseTabs.test.ts  — 7 pure function tests
+src/components/landing/MeshAura.tsx     — mesh gradient aura (pure CSS)
+src/components/layout/ProgressStrip.tsx — 2px progress strip below TopNav
+```
+
+## Files modified in Milestone 7
+
+```
+src/solver/instructions.ts      — new
+src/hooks/useFrontFace.ts       — new
+src/components/Cube3D.tsx       — ActiveFaceHighlight, FaceTracker, OrientationBadge, hover glow
+src/components/SolutionPlayer.tsx — getInstructionForMove, PhaseTabs, phase overlay polish
+src/components/ColorInput.tsx   — 44px circle palette with inner ring
+src/pages/LevelPage.tsx         — BeginnerPreview SVG alignment fix, card-base
+src/pages/LandingPage.tsx       — MeshAura, B2 typography, B4 glassmorphism, card-base
+src/pages/SolvePage.tsx         — ProgressStrip
+src/i18n/index.ts               — A1/A3 strings (instructions, F2L/OLL/PLL, Kociemba)
+src/index.css                   — card-base utility, radius-card token, overlay spring animation
+```
