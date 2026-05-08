@@ -1,12 +1,5 @@
 import type { Language } from '../i18n/index'
-
-export type MoveName =
-  | 'U' | 'Uprime' | 'U2'
-  | 'D' | 'Dprime' | 'D2'
-  | 'R' | 'Rprime' | 'R2'
-  | 'L' | 'Lprime' | 'L2'
-  | 'F' | 'Fprime' | 'F2'
-  | 'B' | 'Bprime' | 'B2'
+import type { MoveName } from '../cube/moves'
 
 type FaceLetter = 'U' | 'D' | 'R' | 'L' | 'F' | 'B'
 type Dir = 'cw' | 'ccw' | 'half'

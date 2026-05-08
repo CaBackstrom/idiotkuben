@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { getInstructionForMove, type MoveName } from '../instructions'
+import type { MoveName } from '../../cube/moves'
+import { getInstructionForMove } from '../instructions'
 
 const ALL_MOVES: MoveName[] = [
   'U', 'Uprime', 'U2',

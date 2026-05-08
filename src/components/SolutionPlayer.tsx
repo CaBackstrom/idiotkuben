@@ -1,18 +1,20 @@
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react'
 import * as THREE from 'three'
-import { type CubeState } from '../cube/CubeState'
+import { type CubeState, type StickerColor } from '../cube/CubeState'
 import { Moves, type MoveName } from '../cube/moves'
 import { moveToNotation } from '../cube/notation'
 import { mulberry32 } from '../cube/prng'
 import { type Phase } from '../solver/phases'
 import { updateStep, clearSession } from '../persistence/session'
-import { sv } from '../i18n/sv'
+import { useLanguage } from '../context/LanguageContext'
 import { type Navigate } from '../pages/routes'
+import { getInstructionForMove } from '../solver/instructions'
 import Cube3D from './Cube3D'
 import { useMoveQueue } from './MoveQueue'
 import PhaseProgress from './PhaseProgress'
 import TutorPanel from './TutorPanel'
 import { track } from '../utils/telemetry'
+import { sounds } from '../utils/sounds'
 
 type Props = {
   initialState: CubeState
@@ -51,11 +53,6 @@ function startStateFor(phaseIdx: number, initialState: CubeState, phases: Phase[
   return phaseIdx === 0 ? initialState : phases[phaseIdx - 1].stateAfter
 }
 
-function formatElapsed(seconds: number): string {
-  if (seconds < 60) return `${seconds} ${sv.solve.celebrationSeconds}`
-  return `${Math.floor(seconds / 60)} ${sv.solve.celebrationMinutes}`
-}
-
 function makeConfetti() {
   const rand = mulberry32(42)
   const count = typeof window !== 'undefined' && window.innerWidth < 768 ? 15 : 30
@@ -70,6 +67,7 @@ function makeConfetti() {
 // ── Phase completion overlay ──────────────────────────────────────────────────
 
 function PhaseOverlay({ phaseId }: { phaseId: number }) {
+  const { t } = useLanguage()
   return (
     <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-50">
       <div className="phase-overlay-enter bg-white/95 border border-[var(--border)] rounded-xl px-8 py-5 text-center shadow-lg">
@@ -80,9 +78,9 @@ function PhaseOverlay({ phaseId }: { phaseId: number }) {
           {'✓'}
         </div>
         <p className="font-bold text-base" style={{ fontFamily: 'var(--font-display)' }}>
-          {sv.phaseComplete.prefix} {phaseId} {sv.phaseComplete.suffix}
+          {t('phaseComplete.prefix')} {phaseId} {t('phaseComplete.suffix')}
         </p>
-        <p className="text-sm text-[var(--muted)] mt-0.5">{sv.phases[phaseId as 1 | 2 | 3 | 4]}</p>
+        <p className="text-sm text-[var(--muted)] mt-0.5">{t(`phases.${phaseId}`)}</p>
       </div>
     </div>
   )
@@ -109,9 +107,44 @@ function Confetti({ particles }: { particles: ReturnType<typeof makeConfetti> })
   )
 }
 
+// ── Proactive tutor card ──────────────────────────────────────────────────────
+
+function ProactiveCard({
+  onAccept,
+  onDismiss,
+}: {
+  onAccept: () => void
+  onDismiss: () => void
+}) {
+  const { t } = useLanguage()
+  return (
+    <div className="fixed bottom-6 right-4 sm:right-6 z-50 w-72 bg-white border border-[var(--border)] rounded-xl shadow-lg p-4 space-y-3 animate-[fadeInUp_0.25s_ease-out]">
+      <div>
+        <p className="font-semibold text-sm text-[var(--fg)]">{t('tutor.stuckTitle')}</p>
+        <p className="text-xs text-[var(--muted)] mt-0.5">{t('tutor.stuckBody')}</p>
+      </div>
+      <div className="flex gap-2">
+        <button
+          onClick={onAccept}
+          className="flex-1 py-1.5 text-xs font-semibold bg-[var(--accent)] text-white rounded hover:opacity-90 transition-opacity"
+        >
+          {t('tutor.stuckYes')}
+        </button>
+        <button
+          onClick={onDismiss}
+          className="flex-1 py-1.5 text-xs border border-[var(--border)] rounded hover:bg-gray-50 transition-colors"
+        >
+          {t('tutor.stuckDismiss')}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // ── Guided mode ───────────────────────────────────────────────────────────────
 
 function GuidedPlayer({ initialState, phases, navigate, onPhaseChange, solveStart }: PlayerProps) {
+  const { t, lang } = useLanguage()
   const guidedMoves = useMemo(() => phases.flatMap(p => p.moves), [phases])
   const guidedStates = useMemo(() => {
     const states: CubeState[] = [initialState]
@@ -132,6 +165,12 @@ function GuidedPlayer({ initialState, phases, navigate, onPhaseChange, solveStar
   const mq = useMoveQueue()
   const confetti = useMemo(() => makeConfetti(), [])
 
+  // Proactive tutor state
+  const [backCounts, setBackCounts] = useState<Record<number, number>>({})
+  const [proactiveShown, setProactiveShown] = useState<Record<number, boolean>>({})
+  const [showProactiveCard, setShowProactiveCard] = useState(false)
+  const [tutorAutoQuestion, setTutorAutoQuestion] = useState<string | undefined>(undefined)
+
   const totalMoves = guidedMoves.length
   const isDone = guidedStep >= totalMoves && !mq.isAnimating
   const { phase: currentPhase, phaseStep, phaseTotal } = getPhaseAtStep(
@@ -145,8 +184,17 @@ function GuidedPlayer({ initialState, phases, navigate, onPhaseChange, solveStar
     [mq],
   )
 
+  // Proactive tutor trigger
+  useEffect(() => {
+    if ((backCounts[guidedStep] ?? 0) >= 3 && !proactiveShown[guidedStep]) {
+      setShowProactiveCard(true)
+      setProactiveShown(p => ({ ...p, [guidedStep]: true }))
+    }
+  }, [backCounts, guidedStep, proactiveShown])
+
   function handleNext() {
     if (mq.isAnimating || isDone || !currentMove) return
+    sounds.click()
     mq.enqueue(currentMove)
     const newStep = guidedStep + 1
     const nextInfo = getPhaseAtStep(Math.min(newStep, totalMoves - 1), phases)
@@ -154,6 +202,7 @@ function GuidedPlayer({ initialState, phases, navigate, onPhaseChange, solveStar
     if (nextInfo.phase.id !== currentPhase.id) {
       track('phase_completed', { phase: String(currentPhase.id) })
       setPhaseOverlay(currentPhase.id)
+      sounds.phaseComplete()
       setTimeout(() => setPhaseOverlay(null), 1500)
       onPhaseChange?.(nextInfo.phase.id)
     }
@@ -177,6 +226,7 @@ function GuidedPlayer({ initialState, phases, navigate, onPhaseChange, solveStar
   function handleBack() {
     if (mq.isAnimating || guidedStep === 0) return
     const newStep = guidedStep - 1
+    setBackCounts(c => ({ ...c, [guidedStep]: (c[guidedStep] ?? 0) + 1 }))
     setGuidedStep(newStep)
     setCubeDisplayState(guidedStates[newStep])
     setCubeKey(k => k + 1)
@@ -184,12 +234,20 @@ function GuidedPlayer({ initialState, phases, navigate, onPhaseChange, solveStar
   }
 
   useEffect(() => {
-    if (isDone) track('solve_completed')
+    if (isDone) {
+      sounds.solved()
+      track('solve_completed')
+    }
   }, [isDone])
 
-  // ── Celebration view ──────────────────────────────────────────────────────
+  // Celebration view
   if (isDone) {
     const elapsed = Math.round((Date.now() - solveStart) / 1000)
+    const mins = Math.floor(elapsed / 60)
+    const secs = elapsed % 60
+    const timeStr = mins > 0
+      ? `${mins} ${t('solve.celebrationMinutes')}`
+      : `${secs} ${t('solve.celebrationSeconds')}`
     return (
       <div className="relative">
         <Confetti particles={confetti} />
@@ -209,10 +267,10 @@ function GuidedPlayer({ initialState, phases, navigate, onPhaseChange, solveStar
               className="font-bold text-[var(--fg)]"
               style={{ fontFamily: 'var(--font-display)', fontSize: '2rem' }}
             >
-              {sv.guided.done}
+              {t('guided.done')}
             </p>
             <p className="text-sm text-[var(--muted)]">
-              {sv.solve.celebrationDone} {totalMoves} {sv.solve.celebrationMovesUnit} {formatElapsed(elapsed)}
+              {t('solve.celebrationDone')} {totalMoves} {t('solve.celebrationMovesUnit')} {timeStr}
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -220,13 +278,13 @@ function GuidedPlayer({ initialState, phases, navigate, onPhaseChange, solveStar
               onClick={() => { clearSession(); navigate?.('/input') }}
               className="py-3 text-sm font-semibold bg-[var(--accent)] text-white rounded hover:opacity-90 active:scale-[0.98] transition-all duration-150"
             >
-              {sv.solve.solveAnother}
+              {t('solve.solveAnother')}
             </button>
             <button
               onClick={() => navigate?.('/')}
               className="py-3 text-sm border border-[var(--border)] rounded hover:bg-gray-50 active:scale-[0.98] transition-all duration-150"
             >
-              {sv.solve.backToStart}
+              {t('solve.backToStart')}
             </button>
           </div>
         </div>
@@ -234,9 +292,9 @@ function GuidedPlayer({ initialState, phases, navigate, onPhaseChange, solveStar
     )
   }
 
-  // ── Normal play view ──────────────────────────────────────────────────────
-  const moveNotation = currentMove ? moveToNotation(currentMove) : '—'
-  const moveExplanation = currentMove ? (sv.moves[currentMove] ?? '') : ''
+  // Normal play view
+  const instruction = currentMove ? getInstructionForMove(currentMove, lang) : null
+  const activeFace: StickerColor | undefined = currentMove ? currentMove[0] as StickerColor : undefined
   const overallProgress = `${guidedStep + 1} / ${totalMoves}`
   const phaseProgress = `${phaseStep + 1} / ${phaseTotal}`
   const progressPct = (guidedStep / totalMoves) * 100
@@ -244,6 +302,16 @@ function GuidedPlayer({ initialState, phases, navigate, onPhaseChange, solveStar
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {phaseOverlay !== null && <PhaseOverlay phaseId={phaseOverlay} />}
+
+      {showProactiveCard && (
+        <ProactiveCard
+          onAccept={() => {
+            setShowProactiveCard(false)
+            setTutorAutoQuestion(t('tutor.stuckQ'))
+          }}
+          onDismiss={() => setShowProactiveCard(false)}
+        />
+      )}
 
       {/* Left: sticky cube */}
       <div>
@@ -255,6 +323,9 @@ function GuidedPlayer({ initialState, phases, navigate, onPhaseChange, solveStar
               moveQueue={mq.queue}
               onMoveComplete={handleMoveComplete}
               groupRef={groupRef}
+              activeFace={activeFace}
+              showOrientationBadge
+              isAnimating={mq.isAnimating}
             />
           </div>
         </div>
@@ -268,21 +339,21 @@ function GuidedPlayer({ initialState, phases, navigate, onPhaseChange, solveStar
           className="font-bold text-[var(--fg)]"
           style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', lineHeight: 1.1 }}
         >
-          {sv.phases[currentPhase.id]}
+          {t(`phases.${currentPhase.id}`)}
         </h2>
 
         <div ref={instructionRef} className="border border-[var(--border)] rounded-lg p-5 bg-white space-y-3">
           <div className="flex items-baseline justify-between">
             <p className="text-sm text-[var(--muted)]">
-              {phaseProgress} {sv.guided.stepOf}
+              {phaseProgress} {t('guided.stepOf')}
             </p>
             <div className="flex items-center gap-2">
               {moveMilestone !== null && (
                 <span className="text-xs font-semibold text-[var(--accent)]">
-                  Drag {moveMilestone} {'✓'}
+                  {t('solve.movePrefix')} {moveMilestone} {'✓'}
                 </span>
               )}
-              <p className="text-xs text-[var(--muted)]">{overallProgress} totalt</p>
+              <p className="text-xs text-[var(--muted)]">{overallProgress} {t('solve.total')}</p>
             </div>
           </div>
 
@@ -291,9 +362,19 @@ function GuidedPlayer({ initialState, phases, navigate, onPhaseChange, solveStar
               className="text-5xl font-bold text-[var(--fg)] leading-none"
               style={{ fontFamily: 'var(--font-mono)' }}
             >
-              {moveNotation}
+              {instruction?.code ?? '—'}
             </span>
-            <p className="text-sm text-[var(--fg)]">{moveExplanation}</p>
+            <p className="text-sm text-[var(--fg)]">
+              {instruction?.primary}
+              {instruction && (
+                <span
+                  className="ml-1 text-xs text-[var(--muted)]"
+                  style={{ fontFamily: 'var(--font-mono)' }}
+                >
+                  ({instruction.code})
+                </span>
+              )}
+            </p>
           </div>
 
           <div className="h-1.5 bg-[var(--border)] rounded-full overflow-hidden">
@@ -311,10 +392,12 @@ function GuidedPlayer({ initialState, phases, navigate, onPhaseChange, solveStar
         <TutorPanel
           context={{
             phase: currentPhase.id,
-            phaseName: sv.phases[currentPhase.id],
-            currentMove: moveNotation,
-            explanation: moveExplanation,
+            phaseName: t(`phases.${currentPhase.id}`),
+            currentMove: instruction?.code ?? '—',
+            explanation: instruction?.primary ?? '',
           }}
+          autoQuestion={tutorAutoQuestion}
+          onAutoQuestionHandled={() => setTutorAutoQuestion(undefined)}
         />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -323,14 +406,14 @@ function GuidedPlayer({ initialState, phases, navigate, onPhaseChange, solveStar
             disabled={guidedStep === 0 || mq.isAnimating}
             className="py-2.5 text-sm border border-[var(--border)] rounded hover:bg-gray-50 hover:shadow-sm disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition-all duration-150"
           >
-            {'←'} {sv.guided.back}
+            {'←'} {t('guided.back')}
           </button>
           <button
             onClick={handleNext}
             disabled={mq.isAnimating}
             className="min-h-[56px] sm:min-h-0 sm:py-2.5 py-4 text-sm font-medium bg-[var(--accent)] text-white rounded hover:opacity-90 hover:shadow-sm disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition-all duration-150"
           >
-            {sv.guided.next} {'→'}
+            {t('guided.next')} {'→'}
           </button>
         </div>
       </div>
@@ -341,6 +424,7 @@ function GuidedPlayer({ initialState, phases, navigate, onPhaseChange, solveStar
 // ── Quick mode ────────────────────────────────────────────────────────────────
 
 function QuickPlayer({ initialState, phases, navigate, onPhaseChange, solveStart }: PlayerProps) {
+  const { t } = useLanguage()
   const [phaseIdx, setPhaseIdx] = useState(0)
   const [cubeDisplayState, setCubeDisplayState] = useState<CubeState>(() => initialState)
   const [cubeKey, setCubeKey] = useState(0)
@@ -360,6 +444,7 @@ function QuickPlayer({ initialState, phases, navigate, onPhaseChange, solveStart
 
   function playPhase() {
     if (mq.isAnimating) return
+    sounds.click()
     currentPhase.moves.forEach(m => mq.enqueue(m))
   }
 
@@ -371,6 +456,7 @@ function QuickPlayer({ initialState, phases, navigate, onPhaseChange, solveStart
 
   function goNext() {
     if (isLastPhase) return
+    sounds.phaseComplete()
     const nextIdx = phaseIdx + 1
     const completedPhaseId = currentPhase.id
 
@@ -398,13 +484,19 @@ function QuickPlayer({ initialState, phases, navigate, onPhaseChange, solveStart
   }
 
   function handleComplete() {
+    sounds.solved()
     setCompleted(true)
     track('solve_completed')
   }
 
-  // ── Celebration view ──────────────────────────────────────────────────────
+  // Celebration view
   if (completed) {
     const elapsed = Math.round((Date.now() - solveStart) / 1000)
+    const mins = Math.floor(elapsed / 60)
+    const secs = elapsed % 60
+    const timeStr = mins > 0
+      ? `${mins} ${t('solve.celebrationMinutes')}`
+      : `${secs} ${t('solve.celebrationSeconds')}`
     const totalMoves = phases.reduce((sum, p) => sum + p.moves.length, 0)
     return (
       <div className="relative">
@@ -425,10 +517,10 @@ function QuickPlayer({ initialState, phases, navigate, onPhaseChange, solveStart
               className="font-bold text-[var(--fg)]"
               style={{ fontFamily: 'var(--font-display)', fontSize: '2rem' }}
             >
-              {sv.solve.done}
+              {t('solve.done')}
             </p>
             <p className="text-sm text-[var(--muted)]">
-              {sv.solve.celebrationDone} {totalMoves} {sv.solve.celebrationMovesUnit} {formatElapsed(elapsed)}
+              {t('solve.celebrationDone')} {totalMoves} {t('solve.celebrationMovesUnit')} {timeStr}
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -436,13 +528,13 @@ function QuickPlayer({ initialState, phases, navigate, onPhaseChange, solveStart
               onClick={() => { clearSession(); navigate?.('/input') }}
               className="py-3 text-sm font-semibold bg-[var(--accent)] text-white rounded hover:opacity-90 active:scale-[0.98] transition-all duration-150"
             >
-              {sv.solve.solveAnother}
+              {t('solve.solveAnother')}
             </button>
             <button
               onClick={() => navigate?.('/')}
               className="py-3 text-sm border border-[var(--border)] rounded hover:bg-gray-50 active:scale-[0.98] transition-all duration-150"
             >
-              {sv.solve.backToStart}
+              {t('solve.backToStart')}
             </button>
           </div>
         </div>
@@ -450,7 +542,7 @@ function QuickPlayer({ initialState, phases, navigate, onPhaseChange, solveStart
     )
   }
 
-  // ── Normal play view ──────────────────────────────────────────────────────
+  // Normal play view
   const algorithmStr = currentPhase.moves.map(moveToNotation).join(' ') || '—'
 
   return (
@@ -479,17 +571,17 @@ function QuickPlayer({ initialState, phases, navigate, onPhaseChange, solveStart
         <div className="border border-[var(--border)] rounded-lg p-5 bg-white space-y-3">
           <div>
             <p className="text-xs text-[var(--muted)] mb-1">
-              {sv.solve.phase} {currentPhase.id} {sv.solve.of} {phases.length}
+              {t('solve.phase')} {currentPhase.id} {t('solve.of')} {phases.length}
             </p>
             <h2
               className="font-bold text-[var(--fg)]"
               style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', lineHeight: 1.1 }}
             >
-              {sv.phases[currentPhase.id]}
+              {t(`phases.${currentPhase.id}`)}
             </h2>
           </div>
           <p className="text-sm text-[var(--fg)]">
-            <span className="font-medium">{sv.solve.algorithm}: </span>
+            <span className="font-medium">{t('solve.algorithm')}: </span>
             <span
               className="text-xs break-all"
               style={{ fontFamily: 'var(--font-mono)' }}
@@ -498,7 +590,7 @@ function QuickPlayer({ initialState, phases, navigate, onPhaseChange, solveStart
             </span>
           </p>
           <p className="text-xs text-[var(--muted)]">
-            {currentPhase.moves.length} {sv.solve.moves}
+            {currentPhase.moves.length} {t('solve.moves')}
           </p>
         </div>
 
@@ -508,27 +600,27 @@ function QuickPlayer({ initialState, phases, navigate, onPhaseChange, solveStart
             disabled={mq.isAnimating || currentPhase.moves.length === 0}
             className="py-2.5 text-sm bg-[var(--fg)] text-white rounded hover:opacity-80 hover:shadow-sm disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition-all duration-150"
           >
-            {sv.solve.play}
+            {t('solve.play')}
           </button>
           <button
             onClick={skipToEnd}
             className="py-2.5 text-sm border border-[var(--border)] rounded hover:bg-gray-50 active:scale-[0.98] transition-all duration-150"
           >
-            {sv.solve.skip}
+            {t('solve.skip')}
           </button>
           <button
             onClick={goPrev}
             disabled={isFirstPhase || mq.isAnimating}
             className="py-2.5 text-sm border border-[var(--border)] rounded hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition-all duration-150"
           >
-            {'←'} {sv.solve.prev}
+            {'←'} {t('solve.prev')}
           </button>
           <button
             onClick={isLastPhase ? handleComplete : goNext}
             disabled={mq.isAnimating}
             className="py-2.5 text-sm border border-[var(--border)] rounded hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition-all duration-150"
           >
-            {isLastPhase ? sv.solve.done : `${sv.solve.next} →`}
+            {isLastPhase ? t('solve.done') : `${t('solve.next')} →`}
           </button>
         </div>
       </div>

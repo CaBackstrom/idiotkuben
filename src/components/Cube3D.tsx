@@ -5,6 +5,9 @@ import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
 import { type CubeState, type StickerColor, FACE_COLORS } from '../cube/CubeState'
 import { Moves, type MoveName } from '../cube/moves'
+import { computeFrontAndTop, type FaceName } from '../hooks/useFrontFace'
+import ActiveFaceHighlight from './cube/ActiveFaceHighlight'
+import OrientationBadge from './cube/OrientationBadge'
 
 // ── Public types ───────────────────────────────────────────────────────────
 
@@ -14,9 +17,13 @@ export type QueuedMove = { name: MoveName; id: number }
 
 const ANIM_DURATION = 0.25 // seconds
 
-const REDUCED_MOTION =
-  typeof window !== 'undefined' &&
-  window.matchMedia('(prefers-reduced-motion: reduce)').matches
+function isReducedMotion(): boolean {
+  try {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  } catch {
+    return false
+  }
+}
 
 // Rotation axis and total angle per move
 const MOVE_ROTATION: Record<MoveName, { axis: THREE.Vector3; angle: number }> = {
@@ -196,7 +203,7 @@ function CubeScene({ initialState, moveQueue, onMoveComplete, groupRef }: CubeSc
     const { axis, value } = MOVE_LAYER[move.name]
     const { axis: rotAxis, angle } = MOVE_ROTATION[move.name]
 
-    if (REDUCED_MOTION) {
+    if (isReducedMotion()) {
       const newState = Moves[move.name](stateRef.current)
       stateRef.current = newState
       onCompleteRef.current(move.id, newState)
@@ -254,6 +261,33 @@ function CubeScene({ initialState, moveQueue, onMoveComplete, groupRef }: CubeSc
   return null
 }
 
+// ── FaceTracker — updates badge DOM directly from useFrame ────────────────
+
+const FACE_COLOR_LABEL: Record<FaceName, string> = {
+  U: 'white', D: 'yellow', F: 'green', B: 'blue', R: 'red', L: 'orange',
+}
+
+function FaceTracker({ badgeRef }: { badgeRef: React.RefObject<HTMLDivElement | null> }) {
+  const { camera } = useThree()
+  const lastRef = useRef({ front: 'F' as FaceName, top: 'U' as FaceName })
+  const lastUpdateRef = useRef(0)
+
+  useFrame(() => {
+    const now = Date.now()
+    if (now - lastUpdateRef.current < 60) return
+    lastUpdateRef.current = now
+    const next = computeFrontAndTop(camera.position.x, camera.position.y, camera.position.z)
+    const prev = lastRef.current
+    if (next.front === prev.front && next.top === prev.top) return
+    lastRef.current = next
+    if (badgeRef.current) {
+      badgeRef.current.textContent = `Front: ${FACE_COLOR_LABEL[next.front]}   Top: ${FACE_COLOR_LABEL[next.top]}`
+    }
+  })
+
+  return null
+}
+
 // ── Public component ───────────────────────────────────────────────────────
 
 type Cube3DProps = {
@@ -262,20 +296,37 @@ type Cube3DProps = {
   onMoveComplete: (moveId: number, newState: CubeState) => void
   groupRef: React.MutableRefObject<THREE.Group | null>
   quality?: 'low' | 'high'
+  activeFace?: StickerColor
+  showOrientationBadge?: boolean
+  isAnimating?: boolean
 }
 
-export default function Cube3D({ initialState, moveQueue, onMoveComplete, groupRef, quality: _quality }: Cube3DProps) {
+export default function Cube3D({
+  initialState, moveQueue, onMoveComplete, groupRef,
+  quality: _quality, activeFace, showOrientationBadge, isAnimating = false,
+}: Cube3DProps) {
+  const badgeRef = useRef<HTMLDivElement | null>(null)
+
   return (
-    <Canvas camera={{ position: [3.5, 3.5, 3.5], fov: 45 }}>
-      <ambientLight intensity={0.6} />
-      <directionalLight position={[5, 8, 5]} intensity={0.9} />
-      <CubeScene
-        initialState={initialState}
-        moveQueue={moveQueue}
-        onMoveComplete={onMoveComplete}
-        groupRef={groupRef}
-      />
-      <OrbitControls makeDefault />
-    </Canvas>
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+      <Canvas
+        camera={{ position: [3.5, 3.5, 3.5], fov: 45 }}
+        dpr={[1, 2]}
+        style={{ width: '100%', height: '100%', display: 'block' }}
+      >
+        <ambientLight intensity={0.6} />
+        <directionalLight position={[5, 8, 5]} intensity={0.9} />
+        <CubeScene
+          initialState={initialState}
+          moveQueue={moveQueue}
+          onMoveComplete={onMoveComplete}
+          groupRef={groupRef}
+        />
+        {activeFace && <ActiveFaceHighlight face={activeFace} animating={isAnimating} />}
+        {showOrientationBadge && <FaceTracker badgeRef={badgeRef} />}
+        <OrbitControls makeDefault />
+      </Canvas>
+      {showOrientationBadge && <OrientationBadge ref={badgeRef} />}
+    </div>
   )
 }
