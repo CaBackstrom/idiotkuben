@@ -16,6 +16,7 @@ import PhaseProgress from './PhaseProgress'
 import TutorPanel from './TutorPanel'
 import { track } from '../utils/telemetry'
 import { sounds } from '../utils/sounds'
+import { useKeyboardNav } from '../hooks/useKeyboardNav'
 
 type Props = {
   initialState: CubeState
@@ -251,6 +252,13 @@ function GuidedPlayer({ initialState, phases, navigate, onPhaseChange, solveStar
       track('solve_completed')
     }
   }, [isDone])
+
+  // Keyboard navigation for guided mode
+  useKeyboardNav({
+    onNext: handleNext,
+    onPrev: handleBack,
+    disabled: isDone,
+  })
 
   // Celebration view
   if (isDone) {
@@ -501,6 +509,15 @@ function QuickPlayer({ initialState, phases, navigate, onPhaseChange, solveStart
     setCompleted(true)
     track('solve_completed')
   }
+
+  // Keyboard navigation for quick mode
+  useKeyboardNav({
+    onNext: isLastPhase ? handleComplete : goNext,
+    onPrev: goPrev,
+    onTogglePlay: playPhase,
+    disabled: completed,
+  })
+
 
   // Celebration view
   if (completed) {

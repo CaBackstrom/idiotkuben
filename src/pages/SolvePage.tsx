@@ -99,7 +99,12 @@ export default function SolvePage({ navigate }: Props) {
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)] font-sans">
-      <TopNav navigate={navigate} onBack={() => navigate('/input')} right={rightLabel} />
+      <TopNav
+        navigate={navigate}
+        onBack={() => navigate('/input')}
+        right={rightLabel}
+        keyboardHint={'← → move  Space play  Home/End phase start/end'}
+      />
       <ProgressStrip pct={progressPct} />
       <div className="p-4 sm:p-6">
         <SolutionPlayer
