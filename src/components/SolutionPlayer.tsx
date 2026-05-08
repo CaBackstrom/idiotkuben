@@ -554,8 +554,8 @@ function QuickPlayer({ initialState, phases, navigate, onPhaseChange, solveStart
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {phaseOverlay !== null && <PhaseOverlay phaseId={phaseOverlay} onDismiss={() => setPhaseOverlay(null)} />}
 
-      {/* Left: sticky cube */}
-      <div>
+      {/* Cube: order-2 on mobile (below info), order-1 on desktop (left column) */}
+      <div className="order-2 md:order-1">
         <div className="md:sticky md:top-20">
           <div className="w-full h-[300px] sm:h-[450px] bg-white rounded border border-[var(--border)] shadow-sm">
             <Cube3D
@@ -569,8 +569,8 @@ function QuickPlayer({ initialState, phases, navigate, onPhaseChange, solveStart
         </div>
       </div>
 
-      {/* Right: solution header + per-phase card + controls */}
-      <div className="space-y-4">
+      {/* Controls: order-1 on mobile (above cube), order-2 on desktop (right column) */}
+      <div className="order-1 md:order-2 space-y-4">
         {/* Solution header: rendered once above the phase card */}
         <PhaseTabs
           mode="quick"
@@ -597,27 +597,31 @@ function QuickPlayer({ initialState, phases, navigate, onPhaseChange, solveStart
           <button
             onClick={playPhase}
             disabled={mq.isAnimating || currentPhase.moves.length === 0}
-            className="py-2.5 text-sm bg-[var(--fg)] text-white rounded hover:opacity-80 hover:shadow-sm disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.97] transition-all duration-150"
+            style={{ touchAction: 'manipulation' }}
+            className="py-3 text-sm bg-[var(--fg)] text-white rounded hover:opacity-80 hover:shadow-sm disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.97] transition-all duration-150"
           >
             {t('solve.play')}
           </button>
           <button
             onClick={skipToEnd}
-            className="py-2.5 text-sm border border-[var(--border)] rounded hover:bg-gray-50 active:scale-[0.97] transition-all duration-150"
+            style={{ touchAction: 'manipulation' }}
+            className="py-3 text-sm border border-[var(--border)] rounded hover:bg-gray-50 active:scale-[0.97] transition-all duration-150"
           >
             {t('solve.skip')}
           </button>
           <button
             onClick={goPrev}
             disabled={isFirstPhase || mq.isAnimating}
-            className="py-2.5 text-sm border border-[var(--border)] rounded hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.97] transition-all duration-150"
+            style={{ touchAction: 'manipulation' }}
+            className="py-3 text-sm border border-[var(--border)] rounded hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.97] transition-all duration-150"
           >
             {'←'} {t('solve.prev')}
           </button>
           <button
             onClick={isLastPhase ? handleComplete : goNext}
             disabled={mq.isAnimating}
-            className="py-2.5 text-sm border border-[var(--border)] rounded hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.97] transition-all duration-150"
+            style={{ touchAction: 'manipulation' }}
+            className="py-3 text-sm border border-[var(--border)] rounded hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.97] transition-all duration-150"
           >
             {isLastPhase ? t('solve.done') : `${t('solve.next')} →`}
           </button>
