@@ -116,3 +116,39 @@ npm test       # vitest (28 tests, all passing)
 - [x] 28 unit tests passing
 - [x] TypeScript strict mode — clean
 - [x] npm run build — clean
+
+## Milestone 3 — done
+
+- [x] LBL solver (solver/lbl.ts) — layer-by-layer phase generation
+- [x] Guided mode in SolutionPlayer — step-by-step with move explanations
+- [x] LevelPage — level selector (Nybörjare / Avancerad)
+- [x] Design tokens — Fraunces, Inter, JetBrains Mono, CSS variables in index.css
+- [x] Full routing: /, /level, /input, /solve
+- [x] Deployed at idiotkuben.pages.dev
+
+## Milestone 4 — done
+
+- [x] LandingPage (src/pages/LandingPage.tsx) — scroll-driven 3D cube on desktop, auto-rotate on mobile
+- [x] DemoPage moved to /demo route (kept for debugging)
+- [x] Cloudflare Worker (cloudflare-worker/) — AI tutor proxying to Llama 3.1 8B Instruct
+- [x] TutorPanel component — shown in guided mode; 3 interaction types; rate limiting (3/min); error/loading states
+- [x] VITE_TUTOR_URL env var gating — app works without the Worker
+- [x] Mobile polish — cube 300px/450px responsive, Next button min-h 56px, phase stepper text hidden on mobile, stickers 32px/36px, buttons full-width on mobile
+- [x] Telemetry — src/utils/telemetry.ts, track() on level_selected, solve_started, solve_completed, phase_completed, tutor_asked
+- [x] Cloudflare Web Analytics script placeholder in index.html
+- [x] .env added to .gitignore
+- [x] 32 unit tests passing
+- [x] TypeScript strict mode — clean
+- [x] npm run build — clean
+
+## File additions in Milestone 4
+
+```
+src/pages/LandingPage.tsx       — landing page with scroll-driven cube
+src/components/TutorPanel.tsx   — AI tutor UI panel
+src/utils/telemetry.ts          — track() helper for CF Web Analytics
+cloudflare-worker/
+  src/index.ts                  — Worker: POST /ask → Llama 3.1 8B → JSON
+  wrangler.toml                 — Worker config with AI binding
+  package.json                  — Worker package (wrangler dev dependency)
+```

@@ -6,6 +6,7 @@ import { sliceIntoPhases, type Phase } from '../solver/phases'
 import { sv } from '../i18n/sv'
 import SolutionPlayer from '../components/SolutionPlayer'
 import { type Navigate } from './routes'
+import { track } from '../utils/telemetry'
 
 type Props = {
   navigate: Navigate
@@ -43,6 +44,7 @@ export default function SolvePage({ navigate }: Props) {
           sliced = sliceIntoPhases(session.cubeState, moves)
         }
         saveSession({ ...session, solution: moves })
+        track('solve_started')
         setPhases(sliced)
       } catch (e) {
         setError(sv.solve.error + ' ' + String(e))
@@ -78,7 +80,7 @@ export default function SolvePage({ navigate }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)] p-6 font-sans">
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)] p-4 sm:p-6 font-sans">
       <SolutionPlayer
         initialState={session.cubeState}
         phases={phases}

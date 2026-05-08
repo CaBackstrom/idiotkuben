@@ -65,7 +65,7 @@ export default function ColorInput({ onSubmit, error, onClearError }: Props) {
   const submitBtn = (
     <button
       onClick={handleSubmit}
-      className="px-5 py-2.5 text-sm font-semibold bg-[var(--accent)] text-white rounded hover:opacity-90 transition-opacity"
+      className="px-5 py-2.5 text-sm font-semibold bg-[var(--accent)] text-white rounded hover:opacity-90 transition-opacity w-full sm:w-auto"
     >
       {sv.input.submit}
     </button>
@@ -76,10 +76,10 @@ export default function ColorInput({ onSubmit, error, onClearError }: Props) {
       <p className="text-sm text-gray-600">{sv.input.hint}</p>
 
       {/* Top action row: scramble + submit */}
-      <div className="flex items-center gap-3 flex-wrap">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 sm:flex-wrap">
         <button
           onClick={handleScramble}
-          className="px-5 py-2.5 text-sm font-semibold bg-white border border-[var(--border)] rounded hover:bg-gray-50 transition-colors"
+          className="px-5 py-2.5 text-sm font-semibold bg-white border border-[var(--border)] rounded hover:bg-gray-50 transition-colors w-full sm:w-auto"
         >
           {sv.input.scramble}
         </button>
@@ -192,7 +192,7 @@ function FaceGrid({ face, stickers, painted, onPaint }: FaceGridProps) {
               onClick={() => onPaint(i)}
               disabled={isCenter}
               style={{ backgroundColor: bg }}
-              className={`w-9 h-9 rounded-sm border transition-colors ${extraBorder} ${
+              className={`w-8 h-8 sm:w-9 sm:h-9 rounded-sm border transition-colors ${extraBorder} ${
                 isCenter ? 'cursor-default opacity-80' : 'hover:opacity-90 cursor-pointer'
               }`}
               title={isCenter ? `${face} (center)` : undefined}

@@ -1,6 +1,7 @@
 import { sv } from '../i18n/sv'
 import { loadSession, saveSession } from '../persistence/session'
 import { type Navigate } from './routes'
+import { track } from '../utils/telemetry'
 
 type Props = {
   navigate: Navigate
@@ -40,6 +41,7 @@ function LevelCard({
 
 export default function LevelPage({ navigate }: Props) {
   function choose(level: Level) {
+    track('level_selected', { level })
     const existing = loadSession()
     if (existing) {
       saveSession({ ...existing, level })

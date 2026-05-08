@@ -24,7 +24,7 @@ export default function PhaseProgress({ currentPhase, phases }: Props) {
             }`}
           >
             <div className="font-mono text-[10px] mb-0.5">{phase.id}</div>
-            <div className="leading-tight">{sv.phases[phase.id]}</div>
+            <div className="leading-tight hidden sm:block">{sv.phases[phase.id]}</div>
           </div>
         )
       })}

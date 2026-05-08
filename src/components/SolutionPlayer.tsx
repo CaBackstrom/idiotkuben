@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useMemo } from 'react'
+import { useState, useRef, useCallback, useMemo, useEffect } from 'react'
 import * as THREE from 'three'
 import { type CubeState } from '../cube/CubeState'
 import { Moves, type MoveName } from '../cube/moves'
@@ -9,6 +9,8 @@ import { sv } from '../i18n/sv'
 import Cube3D from './Cube3D'
 import { useMoveQueue } from './MoveQueue'
 import PhaseProgress from './PhaseProgress'
+import TutorPanel from './TutorPanel'
+import { track } from '../utils/telemetry'
 
 type Props = {
   initialState: CubeState
@@ -71,6 +73,10 @@ function GuidedPlayer({ initialState, phases }: { initialState: CubeState; phase
     if (mq.isAnimating || isDone || !currentMove) return
     mq.enqueue(currentMove)
     const newStep = guidedStep + 1
+    const nextInfo = getPhaseAtStep(Math.min(newStep, totalMoves - 1), phases)
+    if (nextInfo.phase.id !== currentPhase.id) {
+      track('phase_completed', { phase: String(currentPhase.id) })
+    }
     setGuidedStep(newStep)
     updateStep(newStep, currentPhase.id)
   }
@@ -84,10 +90,14 @@ function GuidedPlayer({ initialState, phases }: { initialState: CubeState; phase
     mq.clear()
   }
 
+  useEffect(() => {
+    if (isDone) track('solve_completed')
+  }, [isDone])
+
   if (isDone) {
     return (
       <div className="space-y-4">
-        <div className="w-full h-[360px] bg-white rounded border border-[var(--border)] shadow-sm">
+        <div className="w-full h-[300px] sm:h-[450px] bg-white rounded border border-[var(--border)] shadow-sm">
           <Cube3D
             key={'done'}
             initialState={guidedStates[totalMoves]}
@@ -113,7 +123,7 @@ function GuidedPlayer({ initialState, phases }: { initialState: CubeState; phase
 
   return (
     <div className="space-y-4">
-      <div className="w-full h-[360px] bg-white rounded border border-[var(--border)] shadow-sm">
+      <div className="w-full h-[300px] sm:h-[450px] bg-white rounded border border-[var(--border)] shadow-sm">
         <Cube3D
           key={cubeKey}
           initialState={cubeDisplayState}
@@ -152,7 +162,16 @@ function GuidedPlayer({ initialState, phases }: { initialState: CubeState; phase
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
+      <TutorPanel
+        context={{
+          phase: currentPhase.id,
+          phaseName: sv.phases[currentPhase.id],
+          currentMove: moveNotation,
+          explanation: moveExplanation,
+        }}
+      />
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <button
           onClick={handleBack}
           disabled={guidedStep === 0 || mq.isAnimating}
@@ -163,7 +182,7 @@ function GuidedPlayer({ initialState, phases }: { initialState: CubeState; phase
         <button
           onClick={handleNext}
           disabled={mq.isAnimating}
-          className="py-2.5 text-sm font-medium bg-[var(--accent)] text-white rounded hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
+          className="min-h-[56px] sm:min-h-0 sm:py-2.5 py-4 text-sm font-medium bg-[var(--accent)] text-white rounded hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
         >
           {sv.guided.next} {'→'}
         </button>
@@ -226,7 +245,7 @@ function QuickPlayer({ initialState, phases }: { initialState: CubeState; phases
 
   return (
     <div className="space-y-4">
-      <div className="w-full h-[360px] bg-white rounded border border-[var(--border)] shadow-sm">
+      <div className="w-full h-[300px] sm:h-[450px] bg-white rounded border border-[var(--border)] shadow-sm">
         <Cube3D
           key={cubeKey}
           initialState={cubeDisplayState}

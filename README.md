@@ -1,73 +1,49 @@
-# React + TypeScript + Vite
+# Idiotkuben
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Lär dig lösa en Rubiks kub — ett drag i taget. A web app that teaches the layer-by-layer solving method using a 3D interactive cube, step-by-step guided mode, and an AI tutor powered by Cloudflare Workers AI.
 
-Currently, two official plugins are available:
+Live: **https://idiotkuben.pages.dev**
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## Tech stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Vite + React 19 + TypeScript (strict mode)
+- Tailwind CSS v4
+- three.js + @react-three/fiber + @react-three/drei (3D rendering)
+- cubejs (Kociemba two-phase solver)
+- Cloudflare Pages (frontend) + Cloudflare Workers AI (AI tutor)
+- Vitest (unit tests)
 
-## Expanding the ESLint configuration
+## Run locally
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev       # dev server at localhost:5173
+npm test          # run 32 unit tests
+npm run build     # production build to dist/
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## AI tutor (optional)
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+The Worker in `cloudflare-worker/` proxies requests to Llama 3.1 8B Instruct via Cloudflare Workers AI. To run it locally:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cd cloudflare-worker
+npm install
+npx wrangler dev
+```
+
+Set `VITE_TUTOR_URL` in a `.env` file at the project root to connect the frontend to the running Worker. The app works without this variable — the tutor panel simply doesn't appear.
+
+## Deploy
+
+```bash
+# Frontend
+npm run build
+npx wrangler pages deploy dist --project-name=idiotkuben
+
+# Worker
+cd cloudflare-worker
+npx wrangler deploy
 ```
