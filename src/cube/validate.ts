@@ -137,21 +137,26 @@ export function isValidCubeState(state: CubeState): { valid: boolean; reason?: s
   }
 
   // Check 5: edge orientation — sum of all 12 edge orientations must be even.
-  // U/D-layer edges: orientation 0 if U/D sticker is on U or D face.
-  // E-slice edges: orientation 0 if F/B sticker is on F or B face.
+  // Kociemba definition: each edge's "primary" sticker is U if the piece has U, D if it
+  // has D, otherwise F or B (whichever the piece has). An edge is oriented (ori=0) iff
+  // its primary sticker is at slot 0 of its current position. This is consistent with the
+  // fact that only F/B quarter-turns change edge orientation.
   {
     let orientationSum = 0
-    const udEdgeCount = 8
-    for (let i = 0; i < EDGE_POSITIONS.length; i++) {
-      const [f0, i0] = EDGE_POSITIONS[i]
+    for (const [f0, i0, f1, i1] of EDGE_POSITIONS) {
       const s0 = state[f0][i0]
-      if (i < udEdgeCount) {
-        // U/D layer: slot 0 is U or D face
-        if (s0 !== 'U' && s0 !== 'D') orientationSum += 1
+      const s1 = state[f1][i1]
+      let primary: StickerColor
+      if (s0 === 'U' || s1 === 'U') {
+        primary = 'U'
+      } else if (s0 === 'D' || s1 === 'D') {
+        primary = 'D'
+      } else if (s0 === 'F' || s1 === 'F') {
+        primary = 'F'
       } else {
-        // E-slice: slot 0 is F or B face
-        if (s0 !== 'F' && s0 !== 'B') orientationSum += 1
+        primary = 'B'
       }
+      if (s0 !== primary) orientationSum += 1
     }
     if (orientationSum % 2 !== 0) {
       return {

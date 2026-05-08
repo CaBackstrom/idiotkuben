@@ -1,6 +1,7 @@
 import { describe, test, expect } from 'vitest'
 import { solvedState, type CubeState } from '../CubeState'
-import { Moves } from '../moves'
+import { Moves, ALL_MOVES } from '../moves'
+import { mulberry32 } from '../prng'
 import { isValidCubeState } from '../validate'
 
 describe('isValidCubeState — basic', () => {
@@ -65,6 +66,25 @@ describe('isValidCubeState — edge orientation parity', () => {
     const result = isValidCubeState(bad)
     expect(result.valid).toBe(false)
     expect(result.reason).toMatch(/kantorienter/)
+  })
+
+  test('R U Rprime Uprime is valid (piece-based check must pass for E-slice pieces)', () => {
+    let s = solvedState()
+    s = Moves['R'](s)
+    s = Moves['U'](s)
+    s = Moves['Rprime'](s)
+    s = Moves['Uprime'](s)
+    expect(isValidCubeState(s)).toEqual({ valid: true })
+  })
+
+  test('seed 29810 scramble (20 moves) is valid', () => {
+    const rand = mulberry32(29810)
+    let s = solvedState()
+    for (let i = 0; i < 20; i++) {
+      const idx = Math.floor(rand() * ALL_MOVES.length)
+      s = Moves[ALL_MOVES[idx]](s)
+    }
+    expect(isValidCubeState(s)).toEqual({ valid: true })
   })
 })
 
