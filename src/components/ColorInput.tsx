@@ -1,24 +1,65 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { type CubeState, type StickerColor, type Face, solvedState, FACE_COLORS } from '../cube/CubeState'
 import { Moves, ALL_MOVES } from '../cube/moves'
 import { mulberry32 } from '../cube/prng'
 import { useLanguage } from '../context/LanguageContext'
 
 const ALL_COLORS: StickerColor[] = ['U', 'R', 'F', 'D', 'L', 'B']
-const FACE_ORDER: (keyof CubeState)[] = ['U', 'L', 'F', 'R', 'B', 'D']
 
 type Props = {
   onSubmit: (state: CubeState) => void
   error: string | null
   onClearError: () => void
   isSubmitting?: boolean
+  heading?: ReactNode
 }
 
 function stickerKey(face: keyof CubeState, index: number): string {
   return `${face}-${index}`
 }
 
-export default function ColorInput({ onSubmit, error, onClearError, isSubmitting = false }: Props) {
+// Unified T-shape unfolded cube net for all viewports.
+// compact=true → 24px cells (~316px wide, fits 375px mobile)
+// compact=false → 28px cells (~364px wide, fits lg desktop right column)
+function CubeNet({
+  stickers, painted, onPaint, compact,
+}: {
+  stickers: CubeState
+  painted: Set<string>
+  onPaint: (face: keyof CubeState, i: number) => void
+  compact: boolean
+}) {
+  // Offset = face width + inter-face gap so U/D align above/below F.
+  // compact: face=3*24+2*2=76px + gap-1(4px) = 80px
+  // default: face=3*28+2*2=88px + gap-1(4px) = 92px
+  const offsetPx = compact ? 80 : 92
+  const paint = (face: keyof CubeState) => (i: number) => onPaint(face, i)
+
+  return (
+    <div className="select-none">
+      <div style={{ paddingLeft: `${offsetPx}px` }}>
+        <FaceGrid face="U" stickers={stickers.U} painted={painted} onPaint={paint('U')} compact={compact} />
+      </div>
+      <div className="flex gap-1 mt-0.5">
+        {(['L', 'F', 'R', 'B'] as (keyof CubeState)[]).map(face => (
+          <FaceGrid
+            key={face}
+            face={face}
+            stickers={stickers[face]}
+            painted={painted}
+            onPaint={paint(face)}
+            compact={compact}
+          />
+        ))}
+      </div>
+      <div className="mt-0.5" style={{ paddingLeft: `${offsetPx}px` }}>
+        <FaceGrid face="D" stickers={stickers.D} painted={painted} onPaint={paint('D')} compact={compact} />
+      </div>
+    </div>
+  )
+}
+
+export default function ColorInput({ onSubmit, error, onClearError, isSubmitting = false, heading }: Props) {
   const { t } = useLanguage()
   const [stickers, setStickers] = useState<CubeState>(solvedState)
   const [activeColor, setActiveColor] = useState<StickerColor>('U')
@@ -68,118 +109,89 @@ export default function ColorInput({ onSubmit, error, onClearError, isSubmitting
     <button
       onClick={handleSubmit}
       disabled={isSubmitting}
-      className="px-5 py-2.5 text-sm font-semibold bg-[var(--accent)] text-white rounded hover:opacity-90 hover:shadow-sm disabled:opacity-60 active:scale-[0.98] transition-all duration-150 w-full sm:w-auto"
+      className="px-5 py-2.5 text-sm font-semibold bg-[var(--accent)] text-white rounded hover:opacity-90 hover:shadow-sm disabled:opacity-60 active:scale-[0.97] transition-all duration-150 w-full sm:w-auto"
     >
       {isSubmitting ? t('input.solving') : t('input.submit')}
     </button>
   )
 
-  const palette = (
-    <div className="sticky top-14 z-10 bg-[var(--bg)] pb-2 pt-1">
-      <p className="text-xs font-medium uppercase tracking-wider text-gray-500 mb-2">{t('input.palette')}</p>
-      <div className="flex gap-3 flex-wrap">
-        {ALL_COLORS.map(color => (
-          <button
-            key={color}
-            onClick={() => setActiveColor(color)}
-            title={t(`input.faceLabels.${color}`)}
-            style={{
-              width: '44px',
-              height: '44px',
-              borderRadius: '50%',
-              backgroundColor: color === 'U' ? '#FFFFFF' : FACE_COLORS[color],
-              boxShadow: activeColor === color
-                ? '0 0 0 2px white, 0 0 0 4px var(--fg)'
-                : '0 0 0 1px rgba(0,0,0,0.1)',
-              transition: 'transform 150ms, box-shadow 150ms',
-              transform: activeColor === color ? 'scale(1.05)' : 'scale(1)',
-              border: 'none',
-              cursor: 'pointer',
-            }}
-            onMouseEnter={e => { if (activeColor !== color) (e.currentTarget as HTMLElement).style.transform = 'scale(1.05)' }}
-            onMouseLeave={e => { if (activeColor !== color) (e.currentTarget as HTMLElement).style.transform = 'scale(1)' }}
-          />
-        ))}
-      </div>
-      <div className="flex gap-3 mt-2 flex-wrap">
-        {ALL_COLORS.map(color => {
-          const n = counts[color]
-          return (
-            <span
-              key={color}
-              className={`text-xs font-mono font-semibold ${n === 9 ? 'text-green-600' : 'text-red-600'}`}
-            >
-              {color}:{n}
-            </span>
-          )
-        })}
-      </div>
-    </div>
-  )
+  const netProps = { stickers, painted, onPaint: paint }
 
   return (
-    <div className="space-y-4">
-      <p className="text-sm text-gray-600">{t('input.hint')}</p>
+    <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-8 lg:gap-12 items-start">
+      {/* Left column: controls */}
+      <div className="space-y-4">
+        {heading}
+        <p className="text-sm text-gray-600">{t('input.hint')}</p>
 
-      {/* Top action row: scramble + submit */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 sm:flex-wrap">
-        <button
-          onClick={handleScramble}
-          className="px-5 py-2.5 text-sm font-semibold bg-white border border-[var(--border)] rounded hover:bg-gray-50 transition-colors w-full sm:w-auto"
-        >
-          {t('input.scramble')}
-        </button>
-        {lastSeed !== null && (
-          <span className="text-xs text-gray-400 font-mono">{t('input.seed')}: {lastSeed}</span>
+        {/* Action row: scramble + submit */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 sm:flex-wrap">
+          <button
+            onClick={handleScramble}
+            className="px-5 py-2.5 text-sm font-semibold bg-white border border-[var(--border)] rounded hover:bg-gray-50 transition-colors w-full sm:w-auto"
+          >
+            {t('input.scramble')}
+          </button>
+          {lastSeed !== null && (
+            <span className="text-xs text-gray-400 font-mono">{t('input.seed')}: {lastSeed}</span>
+          )}
+          {submitBtn}
+        </div>
+
+        {/* Color palette: each circle + count chip as a column */}
+        <div className="sticky top-12 sm:top-14 z-10 bg-[var(--bg)] pb-2 pt-1">
+          <p className="text-xs font-medium uppercase tracking-wider text-gray-500 mb-2">{t('input.palette')}</p>
+          <div className="flex gap-3 flex-wrap">
+            {ALL_COLORS.map(color => {
+              const n = counts[color]
+              return (
+                <div key={color} className="flex flex-col items-center gap-1" style={{ width: '44px' }}>
+                  <button
+                    onClick={() => setActiveColor(color)}
+                    title={t(`input.faceLabels.${color}`)}
+                    style={{
+                      width: '44px',
+                      height: '44px',
+                      borderRadius: '50%',
+                      backgroundColor: color === 'U' ? '#FFFFFF' : FACE_COLORS[color],
+                      boxShadow: activeColor === color
+                        ? '0 0 0 2px white, 0 0 0 4px var(--fg)'
+                        : '0 0 0 1px rgba(0,0,0,0.1)',
+                      transition: 'transform 150ms, box-shadow 150ms',
+                      transform: activeColor === color ? 'scale(1.05)' : 'scale(1)',
+                      border: 'none',
+                      cursor: 'pointer',
+                    }}
+                    onMouseEnter={e => { if (activeColor !== color) (e.currentTarget as HTMLElement).style.transform = 'scale(1.05)' }}
+                    onMouseLeave={e => { if (activeColor !== color) (e.currentTarget as HTMLElement).style.transform = 'scale(1)' }}
+                  />
+                  <span className={`text-xs font-mono font-semibold text-center ${n === 9 ? 'text-green-600' : 'text-red-600'}`}>
+                    {color}:{n}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Cube net shown below palette on mobile/tablet; hidden on lg+ (in right column) */}
+        <div className="lg:hidden overflow-x-auto">
+          <CubeNet {...netProps} compact={true} />
+        </div>
+
+        {error && (
+          <div className="text-sm px-3 py-2 rounded border-l-4 border-[var(--accent)] bg-white text-[var(--fg)]">
+            {error}
+          </div>
         )}
+
         {submitBtn}
       </div>
 
-      {palette}
-
-      {/* Mobile: vertical stack of labeled 3x3 grids */}
-      <div className="sm:hidden space-y-4">
-        {FACE_ORDER.map(face => (
-          <div key={face}>
-            <p className="text-xs font-semibold text-[var(--muted)] mb-1.5">
-              {t(`input.faceLabels.${face}`)}
-            </p>
-            <FaceGrid
-              face={face}
-              stickers={stickers[face]}
-              painted={painted}
-              onPaint={(i) => paint(face, i)}
-              stickerSize={44}
-            />
-          </div>
-        ))}
+      {/* Right column: cube net, desktop only (lg+) */}
+      <div className="hidden lg:block lg:sticky lg:top-20">
+        <CubeNet {...netProps} compact={false} />
       </div>
-
-      {/* Desktop: unfolded cross layout */}
-      <div className="hidden sm:block overflow-x-auto">
-        <div className="inline-block">
-          <div className="flex justify-start pl-[calc(3*2.25rem+3*0.25rem)]">
-            <FaceGrid face="U" stickers={stickers.U} painted={painted} onPaint={(i) => paint('U', i)} />
-          </div>
-          <div className="flex gap-1 mt-1">
-            <FaceGrid face="L" stickers={stickers.L} painted={painted} onPaint={(i) => paint('L', i)} />
-            <FaceGrid face="F" stickers={stickers.F} painted={painted} onPaint={(i) => paint('F', i)} />
-            <FaceGrid face="R" stickers={stickers.R} painted={painted} onPaint={(i) => paint('R', i)} />
-            <FaceGrid face="B" stickers={stickers.B} painted={painted} onPaint={(i) => paint('B', i)} />
-          </div>
-          <div className="flex justify-start pl-[calc(3*2.25rem+3*0.25rem)] mt-1">
-            <FaceGrid face="D" stickers={stickers.D} painted={painted} onPaint={(i) => paint('D', i)} />
-          </div>
-        </div>
-      </div>
-
-      {error && (
-        <div className="text-sm px-3 py-2 rounded border-l-4 border-[var(--accent)] bg-white text-[var(--fg)]">
-          {error}
-        </div>
-      )}
-
-      {submitBtn}
     </div>
   )
 }
@@ -189,52 +201,48 @@ type FaceGridProps = {
   stickers: Face
   painted: Set<string>
   onPaint: (index: number) => void
-  stickerSize?: number
+  compact?: boolean
 }
 
-function FaceGrid({ face, stickers, painted, onPaint, stickerSize }: FaceGridProps) {
-  const size = stickerSize ?? 36
+function FaceGrid({ face, stickers, painted, onPaint, compact = false }: FaceGridProps) {
+  const cellClass = compact ? 'w-6 h-6' : 'w-7 h-7'
+
   return (
-    <div>
-      <div className="text-[10px] font-medium text-gray-500 text-center mb-0.5 sm:block hidden">
-        {face}
-      </div>
-      <div className="grid grid-cols-3 gap-0.5">
-        {stickers.map((color, i) => {
-          const isCenter = i === 4
-          const isPainted = isCenter || painted.has(`${face}-${i}`)
-          const isWhite = color === 'U'
+    <div className="grid grid-cols-3 gap-0.5">
+      {stickers.map((color, i) => {
+        const isCenter = i === 4
+        const isPainted = isCenter || painted.has(`${face}-${i}`)
+        const isWhite = color === 'U'
 
-          let bg: string
-          let extraBorder: string
-          if (isCenter) {
-            bg = FACE_COLORS[color]
-            extraBorder = 'border-gray-400'
-          } else if (!isPainted) {
-            bg = '#E8E8E8'
-            extraBorder = 'border-gray-300'
-          } else if (isWhite) {
-            bg = '#FFFFFF'
-            extraBorder = 'border-[var(--muted)] border-2'
-          } else {
-            bg = FACE_COLORS[color]
-            extraBorder = 'border-gray-500'
-          }
+        let bgColor: string
+        let extraBorder: string
+        if (isCenter) {
+          bgColor = FACE_COLORS[color]
+          extraBorder = 'border-gray-400'
+        } else if (!isPainted) {
+          bgColor = '#E8E8E8'
+          extraBorder = 'border-gray-300'
+        } else if (isWhite) {
+          bgColor = '#FFFFFF'
+          extraBorder = 'border-[var(--muted)] border-2'
+        } else {
+          bgColor = FACE_COLORS[color]
+          extraBorder = 'border-gray-500'
+        }
 
-          return (
-            <button
-              key={i}
-              onClick={() => onPaint(i)}
-              disabled={isCenter}
-              style={{ backgroundColor: bg, width: `${size}px`, height: `${size}px` }}
-              className={`rounded-sm border transition-colors ${extraBorder} ${
-                isCenter ? 'cursor-default opacity-80' : 'hover:opacity-90 cursor-pointer'
-              }`}
-              title={isCenter ? `${face} (center)` : undefined}
-            />
-          )
-        })}
-      </div>
+        return (
+          <button
+            key={i}
+            onClick={() => onPaint(i)}
+            disabled={isCenter}
+            style={{ backgroundColor: bgColor }}
+            className={`${cellClass} rounded-sm border transition-colors ${extraBorder} ${
+              isCenter ? 'cursor-default opacity-80' : 'hover:opacity-90 cursor-pointer'
+            }`}
+            title={isCenter ? `${face} (center)` : undefined}
+          />
+        )
+      })}
     </div>
   )
 }
