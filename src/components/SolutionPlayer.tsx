@@ -9,6 +9,7 @@ import { updateStep, clearSession } from '../persistence/session'
 import { useLanguage } from '../context/LanguageContext'
 import { type Navigate } from '../pages/routes'
 import { getInstructionForMove } from '../solver/instructions'
+import PhaseTabs from './solve/PhaseTabs'
 import Cube3D from './Cube3D'
 import { useMoveQueue } from './MoveQueue'
 import PhaseProgress from './PhaseProgress'
@@ -566,20 +567,13 @@ function QuickPlayer({ initialState, phases, navigate, onPhaseChange, solveStart
 
       {/* Right: phase info + controls */}
       <div className="space-y-4">
-        <PhaseProgress currentPhase={currentPhase.id} phases={phases} />
-
         <div className="border border-[var(--border)] rounded-lg p-5 bg-white space-y-3">
-          <div>
-            <p className="text-xs text-[var(--muted)] mb-1">
-              {t('solve.phase')} {currentPhase.id} {t('solve.of')} {phases.length}
-            </p>
-            <h2
-              className="font-bold text-[var(--fg)]"
-              style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', lineHeight: 1.1 }}
-            >
-              {t(`phases.${currentPhase.id}`)}
-            </h2>
-          </div>
+          <PhaseTabs
+            mode="quick"
+            phases={phases}
+            currentPhaseId={currentPhase.id}
+            totalMoves={phases.reduce((s, p) => s + p.moves.length, 0)}
+          />
           <p className="text-sm text-[var(--fg)]">
             <span className="font-medium">{t('solve.algorithm')}: </span>
             <span
