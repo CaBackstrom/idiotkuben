@@ -4,7 +4,7 @@ import { type CubeState, solvedState } from '../cube/CubeState'
 import { type MoveName, INVERSE, ALL_MOVES } from '../cube/moves'
 import { mulberry32 } from '../cube/prng'
 import { verifyScene } from '../cube/verify'
-import { sv } from '../i18n/sv'
+import { useLanguage } from '../context/LanguageContext'
 import Cube3D from './Cube3D'
 import { useMoveQueue } from './MoveQueue'
 
@@ -36,6 +36,7 @@ function stateHash(state: CubeState): number {
 }
 
 export default function DemoPage() {
+  const { t } = useLanguage()
   const [cubeKey, setCubeKey] = useState(0)
   const [state, setState] = useState<CubeState>(solvedState)
   const [history, setHistory] = useState<MoveName[]>([])
@@ -88,16 +89,16 @@ export default function DemoPage() {
 
   const handleVerify = () => {
     const g = groupRef.current
-    if (!g) { setVerifyResult({ ok: false, message: 'Scenen hittades inte.' }); return }
+    if (!g) { setVerifyResult({ ok: false, message: 'Scene not found.' }); return }
     const result = verifyScene(state, g)
     if (result.ok) {
-      setVerifyResult({ ok: true, message: sv.demo.verifyOk })
+      setVerifyResult({ ok: true, message: t('demo.verifyOk') })
     } else {
       const details = result.mismatches
         .slice(0, 5)
         .map(m => `${m.face}[${m.index}]: expected ${m.expected}, got ${m.actual}`)
         .join('; ')
-      setVerifyResult({ ok: false, message: `${sv.demo.verifyFail}: ${details}` })
+      setVerifyResult({ ok: false, message: `${t('demo.verifyFail')}: ${details}` })
     }
   }
 
@@ -105,7 +106,7 @@ export default function DemoPage() {
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)] p-6 font-sans">
-      <h1 className="text-2xl font-semibold tracking-tight mb-6">{sv.demo.title}</h1>
+      <h1 className="text-2xl font-semibold tracking-tight mb-6">{t('demo.title')}</h1>
 
       <div className="flex flex-col lg:flex-row gap-6">
         {/* 3D cube */}
@@ -123,7 +124,7 @@ export default function DemoPage() {
         <div className="flex-1 space-y-4">
           {/* Move buttons */}
           <div>
-            <p className="text-xs font-medium uppercase tracking-wider text-gray-500 mb-2">{sv.demo.moves}</p>
+            <p className="text-xs font-medium uppercase tracking-wider text-gray-500 mb-2">{t('demo.moves')}</p>
             <div className="grid grid-cols-3 gap-1.5">
               {MOVE_GROUPS.map(([, a, b, c]) => (
                 <div key={a} className="flex gap-1">
@@ -147,20 +148,20 @@ export default function DemoPage() {
               onClick={handleReset}
               className="px-3 py-1.5 text-sm bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
             >
-              {sv.demo.reset}
+              {t('demo.reset')}
             </button>
             <button
               onClick={handleUndo}
               disabled={history.length === 0}
               className="px-3 py-1.5 text-sm bg-white border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
-              {sv.demo.undo}
+              {t('demo.undo')}
             </button>
             <button
               onClick={handleVerify}
               className="px-3 py-1.5 text-sm bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
             >
-              {sv.demo.verify}
+              {t('demo.verify')}
             </button>
           </div>
 
@@ -170,7 +171,7 @@ export default function DemoPage() {
               onClick={handleScramble}
               className="px-3 py-1.5 text-sm bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
             >
-              {sv.demo.scramble}
+              {t('demo.scramble')}
             </button>
             <span className="text-sm text-gray-500">seed =</span>
             <input
@@ -184,12 +185,12 @@ export default function DemoPage() {
           {/* Status */}
           <div className="text-sm text-gray-600 space-y-1">
             <p>
-              <span className="font-medium">{sv.demo.lastMoves}:</span>{' '}
+              <span className="font-medium">{t('demo.lastMoves')}:</span>{' '}
               <span className="font-mono">{lastMoves || '—'}</span>
             </p>
             <p>
-              <span className="font-medium">{sv.demo.queue}:</span> {mq.pendingCount} pending
-              {mq.isAnimating && <span className="ml-2 text-blue-600">animerar...</span>}
+              <span className="font-medium">{t('demo.queue')}:</span> {mq.pendingCount} pending
+              {mq.isAnimating && <span className="ml-2 text-blue-600">animating...</span>}
             </p>
           </div>
 
@@ -206,7 +207,7 @@ export default function DemoPage() {
       <div className="mt-6">
         <details className="border border-gray-200 rounded">
           <summary className="px-4 py-2 text-sm font-medium cursor-pointer select-none">
-            {sv.demo.state}
+            {t('demo.state')}
           </summary>
           <pre className="px-4 pb-4 pt-2 text-xs font-mono overflow-auto max-h-48 text-gray-700">
             {JSON.stringify(state, null, 2)}

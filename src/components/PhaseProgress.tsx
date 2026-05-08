@@ -1,6 +1,6 @@
 import { Fragment } from 'react'
 import { type Phase } from '../solver/phases'
-import { sv } from '../i18n/sv'
+import { useLanguage } from '../context/LanguageContext'
 
 type Props = {
   currentPhase: 1 | 2 | 3 | 4
@@ -8,6 +8,8 @@ type Props = {
 }
 
 export default function PhaseProgress({ currentPhase, phases }: Props) {
+  const { t } = useLanguage()
+
   return (
     <div>
       {/* Desktop: connected label boxes */}
@@ -42,7 +44,7 @@ export default function PhaseProgress({ currentPhase, phases }: Props) {
                     {phase.id}
                   </span>
                 )}
-                <span>{sv.phases[phase.id]}</span>
+                <span>{t(`phases.${phase.id}`)}</span>
               </div>
             </Fragment>
           )

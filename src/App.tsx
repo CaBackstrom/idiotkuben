@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { loadSession, clearSession } from './persistence/session'
 import { type Route } from './pages/routes'
+import { LanguageProvider } from './context/LanguageContext'
 import DemoPage from './components/DemoPage'
 import LandingPage from './pages/LandingPage'
 import ContinuePrompt from './components/ContinuePrompt'
@@ -17,7 +18,7 @@ function pathToRoute(path: string): Route {
   return '/'
 }
 
-export default function App() {
+function AppInner() {
   const [route, setRoute] = useState<Route>(() => pathToRoute(window.location.pathname))
   const [session, setSession] = useState(() => loadSession())
 
@@ -45,24 +46,34 @@ export default function App() {
     setRoute('/')
   }
 
+  const pageClass = 'page-content'
+
   return (
     <>
       <StorageBanner />
       {route === '/' && (
         session ? (
-          <ContinuePrompt
-            session={session}
-            navigate={navigate}
-            onFresh={handleFresh}
-          />
+          <div className={pageClass}>
+            <ContinuePrompt session={session} navigate={navigate} onFresh={handleFresh} />
+          </div>
         ) : (
-          <LandingPage navigate={navigate} />
+          <div className={pageClass}>
+            <LandingPage navigate={navigate} />
+          </div>
         )
       )}
-      {route === '/demo' && <DemoPage />}
-      {route === '/level' && <LevelPage navigate={navigate} />}
-      {route === '/input' && <InputPage navigate={navigate} />}
-      {route === '/solve' && <SolvePage navigate={navigate} />}
+      {route === '/demo' && <div className={pageClass}><DemoPage /></div>}
+      {route === '/level' && <div className={pageClass}><LevelPage navigate={navigate} /></div>}
+      {route === '/input' && <div className={pageClass}><InputPage navigate={navigate} /></div>}
+      {route === '/solve' && <div className={pageClass}><SolvePage navigate={navigate} /></div>}
     </>
+  )
+}
+
+export default function App() {
+  return (
+    <LanguageProvider>
+      <AppInner />
+    </LanguageProvider>
   )
 }
