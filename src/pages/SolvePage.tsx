@@ -82,7 +82,7 @@ export default function SolvePage({ navigate }: Props) {
           <p className="text-sm text-[var(--accent)]">{error ?? t('solve.noSession')}</p>
           <button
             onClick={() => navigate('/input')}
-            className="px-4 py-2 text-sm bg-[var(--fg)] text-white rounded hover:opacity-80 active:scale-[0.98] transition-all duration-150"
+            className="px-4 py-2 text-sm bg-[var(--fg)] text-white rounded hover:opacity-80 active:scale-[0.97] transition-all duration-150"
           >
             {t('solve.goToInput')}
           </button>
@@ -91,7 +91,9 @@ export default function SolvePage({ navigate }: Props) {
     )
   }
 
-  const rightLabel = `${t('solve.phase')} ${currentPhase} ${t('solve.of')} ${totalPhases}`
+  const rightLabel = solverMode === 'quick'
+    ? t('phases.optimal')
+    : `${t('solve.phase')} ${currentPhase} ${t('solve.of')} ${totalPhases}`
 
   const progressPct = ((currentPhase - 1) / totalPhases) * 100
 

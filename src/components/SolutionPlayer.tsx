@@ -569,15 +569,16 @@ function QuickPlayer({ initialState, phases, navigate, onPhaseChange, solveStart
         </div>
       </div>
 
-      {/* Right: phase info + controls */}
+      {/* Right: solution header + per-phase card + controls */}
       <div className="space-y-4">
+        {/* Solution header: rendered once above the phase card */}
+        <PhaseTabs
+          mode="quick"
+          phases={phases}
+          currentPhaseId={currentPhase.id}
+          totalMoves={phases.reduce((s, p) => s + p.moves.length, 0)}
+        />
         <div className="card-base space-y-3">
-          <PhaseTabs
-            mode="quick"
-            phases={phases}
-            currentPhaseId={currentPhase.id}
-            totalMoves={phases.reduce((s, p) => s + p.moves.length, 0)}
-          />
           <p className="text-sm text-[var(--fg)]">
             <span className="font-medium">{t('solve.algorithm')}: </span>
             <span
