@@ -204,19 +204,34 @@ function CubeScene({ initialState, moveQueue, onMoveComplete, groupRef }: CubeSc
     const { axis, value } = MOVE_LAYER[move.name]
     const { axis: rotAxis, angle } = MOVE_ROTATION[move.name]
 
-    if (isReducedMotion()) {
-      const newState = Moves[move.name](stateRef.current)
-      stateRef.current = newState
-      onCompleteRef.current(move.id, newState)
-      return
-    }
-
     const layer: THREE.Mesh[] = []
     group.children.forEach(child => {
       if (!(child instanceof THREE.Mesh)) return
       const coord = axis === 'x' ? child.position.x : axis === 'y' ? child.position.y : child.position.z
       if (Math.abs(coord - value) < 0.01) layer.push(child)
     })
+
+    if (isReducedMotion()) {
+      // Apply full rotation instantly via pivot — same decomposition as animation completion.
+      // Previously this path skipped the pivot, leaving cubies at stale visual positions.
+      const pivot = new THREE.Group()
+      scene.add(pivot)
+      layer.forEach(m => { group.remove(m); pivot.add(m) })
+      pivot.setRotationFromAxisAngle(rotAxis, angle)
+      pivot.updateWorldMatrix(true, true)
+      pivot.children.slice().forEach(child => {
+        child.applyMatrix4(pivot.matrixWorld)
+        pivot.remove(child)
+        group.add(child)
+        child.position.set(Math.round(child.position.x), Math.round(child.position.y), Math.round(child.position.z))
+        child.quaternion.copy(snapRotationToGrid(child.quaternion))
+      })
+      scene.remove(pivot)
+      const newState = Moves[move.name](stateRef.current)
+      stateRef.current = newState
+      onCompleteRef.current(move.id, newState)
+      return
+    }
 
     const pivot = new THREE.Group()
     scene.add(pivot)
