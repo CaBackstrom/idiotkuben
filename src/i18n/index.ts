@@ -141,6 +141,7 @@ const translations = {
       back: 'Back',
       stepOf: 'moves',
       done: 'Cube solved!',
+      keyboardHint: 'Tip: use arrow keys ← → to navigate, spacebar to play/pause.',
     },
     tutor: {
       explainSimpler: 'Explain simpler',
@@ -314,6 +315,7 @@ const translations = {
       back: 'Backa',
       stepOf: 'drag',
       done: 'Kuben är löst!',
+      keyboardHint: 'Tips: använd piltangenterna ← → för att navigera, mellanslag för att spela/pausa.',
     },
     tutor: {
       explainSimpler: 'Förklara enklare',

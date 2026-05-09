@@ -5,6 +5,7 @@ function evt(key: string, tagName = 'BODY'): KeyboardEvent {
   return {
     key,
     preventDefault: vi.fn(),
+    stopPropagation: vi.fn(),
     target: { tagName } as HTMLElement,
   } as unknown as KeyboardEvent
 }

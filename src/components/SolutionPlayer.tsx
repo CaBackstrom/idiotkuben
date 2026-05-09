@@ -415,6 +415,10 @@ function GuidedPlayer({ initialState, phases, navigate, onPhaseChange, solveStar
           </div>
         </div>
 
+        <p className="hidden md:block text-xs text-center" style={{ color: 'var(--muted)' }}>
+          {t('guided.keyboardHint')}
+        </p>
+
         <TutorPanel
           context={{
             phase: currentPhase.id,
