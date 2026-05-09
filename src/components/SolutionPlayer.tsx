@@ -271,28 +271,33 @@ function GuidedPlayer({ initialState, phases, navigate, onPhaseChange, solveStar
     return (
       <div className="relative">
         <Confetti particles={confetti} />
-        <div className="space-y-6">
-          <div className="w-full h-[300px] sm:h-[450px] bg-white rounded border border-[var(--border)] shadow-sm">
-            <Cube3D
-              key="done"
-              initialState={guidedStates[totalMoves]}
-              moveQueue={[]}
-              onMoveComplete={handleMoveComplete}
-              groupRef={groupRef}
-              celebrationMode
-            />
-          </div>
-          <PhaseProgress currentPhase={4 as 1 | 2 | 3 | 4} phases={phases} />
-          <div className="text-center space-y-1 py-4">
-            <p
-              className="font-bold text-[var(--fg)]"
-              style={{ fontFamily: 'var(--font-display)', fontSize: '2rem' }}
+        <div className="space-y-4">
+          {/* Cube with celebration text overlaid at bottom */}
+          <div className="relative w-full h-[280px] sm:h-[400px]">
+            <div className="w-full h-full bg-white rounded border border-[var(--border)] shadow-sm">
+              <Cube3D
+                key="done"
+                initialState={guidedStates[totalMoves]}
+                moveQueue={[]}
+                onMoveComplete={handleMoveComplete}
+                groupRef={groupRef}
+                celebrationMode
+              />
+            </div>
+            <div
+              className="absolute inset-x-0 bottom-0 pb-4 pt-12 text-center pointer-events-none rounded-b"
+              style={{ background: 'linear-gradient(to bottom, transparent, rgba(255,255,255,0.92) 40%)' }}
             >
-              {t('guided.done')}
-            </p>
-            <p className="text-sm text-[var(--muted)]">
-              {t('solve.celebrationDone')} {totalMoves} {t('solve.celebrationMovesUnit')} {timeStr}
-            </p>
+              <p
+                className="font-bold text-[var(--fg)]"
+                style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem' }}
+              >
+                {t('guided.done')}
+              </p>
+              <p className="text-sm text-[var(--muted)]">
+                {t('solve.celebrationDone')} {totalMoves} {t('solve.celebrationMovesUnit')} {timeStr}
+              </p>
+            </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <button
@@ -553,28 +558,33 @@ function QuickPlayer({ initialState, phases, navigate, onPhaseChange, solveStart
     return (
       <div className="relative">
         <Confetti particles={confetti} />
-        <div className="space-y-6">
-          <div className="w-full h-[300px] sm:h-[450px] bg-white rounded border border-[var(--border)] shadow-sm">
-            <Cube3D
-              key="done"
-              initialState={phases[phases.length - 1].stateAfter}
-              moveQueue={[]}
-              onMoveComplete={handleMoveComplete}
-              groupRef={groupRef}
-              celebrationMode
-            />
-          </div>
-          <PhaseProgress currentPhase={4 as 1 | 2 | 3 | 4} phases={phases} />
-          <div className="text-center space-y-1 py-4">
-            <p
-              className="font-bold text-[var(--fg)]"
-              style={{ fontFamily: 'var(--font-display)', fontSize: '2rem' }}
+        <div className="space-y-4">
+          {/* Cube with celebration text overlaid at bottom */}
+          <div className="relative w-full h-[280px] sm:h-[400px]">
+            <div className="w-full h-full bg-white rounded border border-[var(--border)] shadow-sm">
+              <Cube3D
+                key="done"
+                initialState={phases[phases.length - 1].stateAfter}
+                moveQueue={[]}
+                onMoveComplete={handleMoveComplete}
+                groupRef={groupRef}
+                celebrationMode
+              />
+            </div>
+            <div
+              className="absolute inset-x-0 bottom-0 pb-4 pt-12 text-center pointer-events-none rounded-b"
+              style={{ background: 'linear-gradient(to bottom, transparent, rgba(255,255,255,0.92) 40%)' }}
             >
-              {t('solve.done')}
-            </p>
-            <p className="text-sm text-[var(--muted)]">
-              {t('solve.celebrationDone')} {totalMoves} {t('solve.celebrationMovesUnit')} {timeStr}
-            </p>
+              <p
+                className="font-bold text-[var(--fg)]"
+                style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem' }}
+              >
+                {t('solve.done')}
+              </p>
+              <p className="text-sm text-[var(--muted)]">
+                {t('solve.celebrationDone')} {totalMoves} {t('solve.celebrationMovesUnit')} {timeStr}
+              </p>
+            </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <button
