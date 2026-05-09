@@ -319,3 +319,29 @@ src/components/cube/ActiveFaceHighlight.tsx — full rewrite: halo only, no dim 
 src/components/ColorInput.tsx               — B1 text, B2 hook, B3 dblclick, B4 validation, B5 borders
 src/i18n/index.ts                           — howToUse, keyboardHint, validationExact/TooMany/TooFew, colorNames
 ```
+
+## Milestone 10 — done
+
+- [x] D1: Cube sticker colors brightened +15% in FACE_COLORS; ambient light 0.6→1.2; directional light [4,5,4] intensity 0.4; sRGB outputColorSpace set on Canvas
+- [x] B1: Auto-rotate camera to active face after each move — 800ms easeInOut tween, 5s idle guard, user interaction cancels tween; src/cube/cameraPositions.ts + src/hooks/useAutoRotate.ts
+- [x] A1: Mobile sticky action bar — "Backa" / "Klar" fixed at viewport bottom on <sm, hidden on desktop (buttons rendered twice); ProactiveCard raised above sticky bar
+- [x] C1: Compact solved-state layout — cube height reduced to 280/400px, PhaseProgress hidden on solved, celebration text overlaid via gradient on cube, space-y-4
+- [x] 95 unit tests passing (18 new for useAutoRotate)
+- [x] npm run build — clean
+- [x] Deployed: idiotkuben.pages.dev
+
+## File additions in Milestone 10
+
+```
+src/cube/cameraPositions.ts                 — six camera positions per face (distance ~6.16, 3/4 angle)
+src/hooks/useAutoRotate.ts                  — CAMERA_POSITIONS, easeInOutQuad, shouldAutoRotate, useAutoRotate hook
+src/hooks/__tests__/useAutoRotate.test.ts   — 18 tests for pure helpers
+```
+
+## Files modified in Milestone 10
+
+```
+src/cube/CubeState.ts           — D1: brightened FACE_COLORS (+15%)
+src/components/Cube3D.tsx       — D1: lighting, outputColorSpace; B1: CameraAutoRotate component
+src/components/SolutionPlayer.tsx — A1: mobile sticky bar + ProactiveCard offset; C1: compact celebration
+```
