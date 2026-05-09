@@ -8,6 +8,7 @@ import { Moves, type MoveName } from '../cube/moves'
 import { computeFrontAndTop, type FaceName } from '../hooks/useFrontFace'
 import ActiveFaceHighlight from './cube/ActiveFaceHighlight'
 import OrientationBadge from './cube/OrientationBadge'
+import { useAutoRotate } from '../hooks/useAutoRotate'
 
 // ── Public types ───────────────────────────────────────────────────────────
 
@@ -341,6 +342,13 @@ function SolvedCelebrationOverlay() {
   return null
 }
 
+// ── Camera auto-rotate ─────────────────────────────────────────────────────
+
+function CameraAutoRotate({ activeFace }: { activeFace: StickerColor }) {
+  useAutoRotate(activeFace)
+  return null
+}
+
 // ── Public component ───────────────────────────────────────────────────────
 
 type Cube3DProps = {
@@ -387,6 +395,7 @@ export default function Cube3D({
           groupRef={groupRef}
         />
         {activeFace && <ActiveFaceHighlight face={activeFace} animating={isAnimating} />}
+        {activeFace && <CameraAutoRotate activeFace={activeFace} />}
         {celebrationMode && <SolvedCelebrationOverlay />}
         {showOrientationBadge && <FaceTracker badgeRef={badgeRef} />}
         <OrbitControls makeDefault autoRotate={celebrationMode} autoRotateSpeed={15} />
