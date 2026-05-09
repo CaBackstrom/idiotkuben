@@ -65,9 +65,9 @@ export function cloneState(state: CubeState): CubeState {
 
 export const FACE_COLORS: Record<StickerColor, string> = {
   U: '#FFFFFF', // white
-  D: '#FFCC00', // yellow
-  F: '#009B48', // green
-  B: '#0046AD', // blue
-  R: '#C8102E', // red
-  L: '#FF5800', // orange
+  D: '#FFEB00', // yellow +15%
+  F: '#00B253', // green +15%
+  B: '#0051C7', // blue +15%
+  R: '#E61235', // red +15%
+  L: '#FF6500', // orange +15%
 }

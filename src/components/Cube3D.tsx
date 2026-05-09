@@ -376,9 +376,10 @@ export default function Cube3D({
         camera={{ position: [4, 4, 4], fov: 45 }}
         dpr={[1, 2]}
         style={{ width: '100%', height: '100%', display: 'block' }}
+        onCreated={({ gl }) => { gl.outputColorSpace = THREE.SRGBColorSpace }}
       >
-        <ambientLight intensity={0.6} />
-        <directionalLight position={[5, 8, 5]} intensity={0.9} />
+        <ambientLight intensity={1.2} />
+        <directionalLight position={[4, 5, 4]} intensity={0.4} />
         <CubeScene
           initialState={initialState}
           moveQueue={moveQueue}
