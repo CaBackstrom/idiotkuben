@@ -269,9 +269,9 @@ function GuidedPlayer({ initialState, phases, navigate, onPhaseChange, solveStar
       ? `${mins} ${t('solve.celebrationMinutes')}`
       : `${secs} ${t('solve.celebrationSeconds')}`
     return (
-      <div className="relative">
+      <div className="relative celebration-enter">
         <Confetti particles={confetti} />
-        <div className="space-y-4">
+        <div className="space-y-4 celebration-card-enter">
           {/* Cube with celebration text overlaid at bottom */}
           <div className="relative w-full h-[280px] sm:h-[400px]">
             <div className="w-full h-full bg-white rounded border border-[var(--border)] shadow-sm">
@@ -560,9 +560,9 @@ function QuickPlayer({ initialState, phases, navigate, onPhaseChange, solveStart
       : `${secs} ${t('solve.celebrationSeconds')}`
     const totalMoves = phases.reduce((sum, p) => sum + p.moves.length, 0)
     return (
-      <div className="relative">
+      <div className="relative celebration-enter">
         <Confetti particles={confetti} />
-        <div className="space-y-4">
+        <div className="space-y-4 celebration-card-enter">
           {/* Cube with celebration text overlaid at bottom */}
           <div className="relative w-full h-[280px] sm:h-[400px]">
             <div className="w-full h-full bg-white rounded border border-[var(--border)] shadow-sm">
