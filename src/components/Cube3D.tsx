@@ -344,8 +344,8 @@ function SolvedCelebrationOverlay() {
 
 // ── Camera auto-rotate ─────────────────────────────────────────────────────
 
-function CameraAutoRotate({ activeFace }: { activeFace: StickerColor }) {
-  useAutoRotate(activeFace)
+function CameraAutoRotate({ activeFace, isAnimating }: { activeFace: StickerColor; isAnimating: boolean }) {
+  useAutoRotate(activeFace, isAnimating)
   return null
 }
 
@@ -395,7 +395,7 @@ export default function Cube3D({
           groupRef={groupRef}
         />
         {activeFace && <ActiveFaceHighlight face={activeFace} animating={isAnimating} />}
-        {activeFace && <CameraAutoRotate activeFace={activeFace} />}
+        {activeFace && <CameraAutoRotate activeFace={activeFace} isAnimating={isAnimating} />}
         {celebrationMode && <SolvedCelebrationOverlay />}
         {showOrientationBadge && <FaceTracker badgeRef={badgeRef} />}
         <OrbitControls makeDefault autoRotate={celebrationMode} autoRotateSpeed={15} />

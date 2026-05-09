@@ -21,7 +21,7 @@ export function shouldAutoRotate(
   return nowMs - lastInteractionMs > thresholdMs
 }
 
-export function useAutoRotate(activeFace: StickerColor | undefined): void {
+export function useAutoRotate(activeFace: StickerColor | undefined, isAnimating: boolean): void {
   const { camera, controls } = useThree()
   const lastInteractionRef = useRef(0)
   const startPosRef = useRef<THREE.Vector3 | null>(null)
@@ -42,16 +42,17 @@ export function useAutoRotate(activeFace: StickerColor | undefined): void {
     return () => ed.removeEventListener('start', handleStart)
   }, [controls])
 
-  // Start new tween when active face changes (only if user hasn't touched controls recently)
+  // Start new tween when active face changes — but only after move animation finishes
   useEffect(() => {
     if (!activeFace || activeFace === prevFaceRef.current) return
+    if (isAnimating) return // wait for move animation to complete before rotating camera
     prevFaceRef.current = activeFace
     if (!shouldAutoRotate(lastInteractionRef.current, Date.now())) return
     const [tx, ty, tz] = CAMERA_POSITIONS[activeFace]
     startPosRef.current = camera.position.clone()
     targetPosRef.current = new THREE.Vector3(tx, ty, tz)
     progressRef.current = 0
-  }, [activeFace, camera])
+  }, [activeFace, camera, isAnimating])
 
   useFrame((_, delta) => {
     if (progressRef.current >= 1 || !startPosRef.current || !targetPosRef.current) return
