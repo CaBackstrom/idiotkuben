@@ -131,7 +131,7 @@ function ProactiveCard({
 }) {
   const { t } = useLanguage()
   return (
-    <div className="fixed bottom-6 right-4 sm:right-6 z-50 w-72 bg-white border border-[var(--border)] rounded-xl shadow-lg p-4 space-y-3 animate-[fadeInUp_0.25s_ease-out]">
+    <div className="fixed bottom-24 sm:bottom-6 right-4 sm:right-6 z-50 w-72 bg-white border border-[var(--border)] rounded-xl shadow-lg p-4 space-y-3 animate-[fadeInUp_0.25s_ease-out]">
       <div>
         <p className="font-semibold text-sm text-[var(--fg)]">{t('tutor.stuckTitle')}</p>
         <p className="text-xs text-[var(--muted)] mt-0.5">{t('tutor.stuckBody')}</p>
@@ -352,8 +352,8 @@ function GuidedPlayer({ initialState, phases, navigate, onPhaseChange, solveStar
         </div>
       </div>
 
-      {/* Right: instruction panel */}
-      <div className="space-y-4">
+      {/* Right: instruction panel — extra bottom padding on mobile for sticky bar */}
+      <div className="space-y-4 pb-20 sm:pb-0">
         <PhaseProgress currentPhase={currentPhase.id} phases={phases} />
 
         <h2
@@ -421,7 +421,8 @@ function GuidedPlayer({ initialState, phases, navigate, onPhaseChange, solveStar
           onAutoQuestionHandled={() => setTutorAutoQuestion(undefined)}
         />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {/* Desktop buttons — hidden on mobile */}
+        <div className="hidden sm:grid grid-cols-2 gap-2">
           <button
             onClick={handleBack}
             disabled={guidedStep === 0 || mq.isAnimating}
@@ -432,11 +433,32 @@ function GuidedPlayer({ initialState, phases, navigate, onPhaseChange, solveStar
           <button
             onClick={handleNext}
             disabled={mq.isAnimating}
-            className="min-h-[56px] sm:min-h-0 sm:py-2.5 py-4 text-sm font-medium bg-[var(--accent)] text-white rounded hover:opacity-90 hover:shadow-sm disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.97] transition-all duration-150"
+            className="py-2.5 text-sm font-medium bg-[var(--accent)] text-white rounded hover:opacity-90 hover:shadow-sm disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.97] transition-all duration-150"
           >
             {t('guided.next')} {'→'}
           </button>
         </div>
+      </div>
+
+      {/* Mobile sticky bar — hidden on desktop */}
+      <div
+        className="fixed bottom-0 left-0 right-0 z-50 flex justify-between gap-3 px-6 py-4 sm:hidden"
+        style={{ background: 'var(--bg)', borderTop: '1px solid rgba(26,26,26,0.06)' }}
+      >
+        <button
+          onClick={handleBack}
+          disabled={guidedStep === 0 || mq.isAnimating}
+          className="flex-1 py-3 text-sm border border-[var(--border)] rounded hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.97] transition-all duration-150"
+        >
+          {'←'} {t('guided.back')}
+        </button>
+        <button
+          onClick={handleNext}
+          disabled={mq.isAnimating}
+          className="flex-1 py-3 text-sm font-medium bg-[var(--accent)] text-white rounded hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.97] transition-all duration-150"
+        >
+          {t('guided.next')} {'→'}
+        </button>
       </div>
     </div>
   )
