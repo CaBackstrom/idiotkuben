@@ -16,11 +16,11 @@ export function buildKeydownHandler(cbs: Callbacks, isDisabled: () => boolean) {
     if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return
 
     switch (e.key) {
-      case 'ArrowRight': e.preventDefault(); cbs.onNext(); break
-      case 'ArrowLeft':  e.preventDefault(); cbs.onPrev(); break
-      case ' ':          e.preventDefault(); cbs.onTogglePlay?.(); break
-      case 'Home':       e.preventDefault(); cbs.onHome?.(); break
-      case 'End':        e.preventDefault(); cbs.onEnd?.(); break
+      case 'ArrowRight': e.preventDefault(); e.stopPropagation(); cbs.onNext(); break
+      case 'ArrowLeft':  e.preventDefault(); e.stopPropagation(); cbs.onPrev(); break
+      case ' ':          e.preventDefault(); e.stopPropagation(); cbs.onTogglePlay?.(); break
+      case 'Home':       e.preventDefault(); e.stopPropagation(); cbs.onHome?.(); break
+      case 'End':        e.preventDefault(); e.stopPropagation(); cbs.onEnd?.(); break
     }
   }
 }
