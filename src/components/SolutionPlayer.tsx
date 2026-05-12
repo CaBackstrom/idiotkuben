@@ -453,13 +453,19 @@ function GuidedPlayer({ initialState, phases, navigate, onPhaseChange, solveStar
         </div>
 
         {/* Desktop buttons — hidden on mobile */}
-        <div className="hidden sm:grid grid-cols-2 gap-2">
+        <div className="hidden sm:grid grid-cols-3 gap-2">
           <button
             onClick={handleBack}
             disabled={guidedStep === 0 || mq.isAnimating}
             className="py-2.5 text-sm border border-[var(--border)] rounded hover:bg-gray-50 hover:shadow-sm disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.97] transition-all duration-150"
           >
             {'←'} {t('guided.back')}
+          </button>
+          <button
+            onClick={handleStuck}
+            className="py-2.5 text-sm text-[var(--muted)] border border-[var(--border)] rounded hover:bg-gray-50 active:scale-[0.97] transition-all duration-150"
+          >
+            {t('guided.stuck')}
           </button>
           <button
             onClick={handleNext}
@@ -469,12 +475,6 @@ function GuidedPlayer({ initialState, phases, navigate, onPhaseChange, solveStar
             {t('guided.next')} {'→'}
           </button>
         </div>
-        <button
-          onClick={handleStuck}
-          className="hidden sm:block w-full py-2 text-sm text-[var(--muted)] border border-[var(--border)] rounded hover:bg-gray-50 active:scale-[0.97] transition-all duration-150"
-        >
-          {t('guided.stuck')}
-        </button>
       </div>
 
       {/* Mobile sticky bar — hidden on desktop */}
@@ -491,9 +491,10 @@ function GuidedPlayer({ initialState, phases, navigate, onPhaseChange, solveStar
         </button>
         <button
           onClick={handleStuck}
-          className="shrink-0 px-4 py-3 text-sm text-[var(--muted)] border border-[var(--border)] rounded hover:bg-gray-50 active:scale-[0.97] transition-all duration-150"
+          aria-label={t('guided.stuck')}
+          className="shrink-0 w-11 flex items-center justify-center text-base text-[var(--muted)] border border-[var(--border)] rounded hover:bg-gray-50 active:scale-[0.97] transition-all duration-150"
         >
-          {t('guided.stuck')}
+          {'?'}
         </button>
         <button
           onClick={handleNext}
