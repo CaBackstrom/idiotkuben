@@ -22,7 +22,7 @@ export default function TwoLevels({ navigate }: { navigate: Navigate }) {
   ]
 
   return (
-    <section style={{ padding: '5rem 1.5rem' }}>
+    <section style={{ padding: '5rem 1.5rem', background: 'linear-gradient(135deg, rgba(200,16,46,0.04) 0%, rgba(255,88,0,0.05) 100%)' }}>
       <h2
         style={{
           fontFamily: 'var(--font-display)',

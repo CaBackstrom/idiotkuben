@@ -284,7 +284,7 @@ export default function LandingPage({ navigate }: { navigate: Navigate }) {
           </div>
 
           {/* Cube canvas with mesh aura + D2 floor glow */}
-          <div className="relative" style={{ height: '55vw', minHeight: '260px', maxHeight: '400px', background: 'var(--bg)' }}>
+          <div className="relative" style={{ height: '55vw', minHeight: '260px', maxHeight: '400px', background: 'var(--bg)', overflow: 'hidden' }}>
             <MeshAura />
             {/* D2: Soft radial floor glow */}
             <div
@@ -449,7 +449,7 @@ export default function LandingPage({ navigate }: { navigate: Navigate }) {
 
             {/* Right: cube with mesh aura + D2 floor glow */}
             <div
-              style={{ width: '52%', height: '100%', position: 'relative', background: 'var(--bg)' }}
+              style={{ width: '52%', height: '100%', position: 'relative', background: 'var(--bg)', overflow: 'hidden' }}
             >
               <MeshAura />
               {/* D2: Floor glow */}

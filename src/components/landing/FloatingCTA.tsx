@@ -30,10 +30,11 @@ export default function FloatingCTA({ heroRef, navigate }: Props) {
       style={{
         position: 'fixed',
         bottom: '1rem',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: 'calc(100vw - 3rem)',
-        maxWidth: '400px',
+        left: 0,
+        right: 0,
+        padding: '0 1.5rem',
+        display: 'flex',
+        justifyContent: 'center',
         opacity: visible ? 1 : 0,
         transition: 'opacity 250ms ease',
         pointerEvents: visible ? 'auto' : 'none',
@@ -44,6 +45,7 @@ export default function FloatingCTA({ heroRef, navigate }: Props) {
         onClick={() => navigate('/level')}
         style={{
           width: '100%',
+          maxWidth: '400px',
           padding: '1rem',
           background: 'var(--accent)',
           backdropFilter: 'blur(12px)',

@@ -4,7 +4,7 @@ export default function TutorTease() {
   const { t } = useLanguage()
 
   return (
-    <section style={{ padding: '5rem 1.5rem', background: '#FAFAF5' }}>
+    <section style={{ padding: '5rem 1.5rem', background: 'linear-gradient(150deg, rgba(0,81,186,0.05) 0%, #FAFAF5 60%)' }}>
       <div style={{ maxWidth: '560px', margin: '0 auto' }}>
         <h2
           style={{

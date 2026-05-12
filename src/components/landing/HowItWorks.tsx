@@ -62,7 +62,7 @@ export default function HowItWorks() {
   ]
 
   return (
-    <section style={{ padding: '5rem 1.5rem', background: '#FAFAF5' }}>
+    <section style={{ padding: '5rem 1.5rem', background: 'linear-gradient(150deg, rgba(0,158,96,0.06) 0%, #FAFAF5 50%, rgba(255,213,0,0.06) 100%)' }}>
       <h2
         style={{
           fontFamily: 'var(--font-display)',
