@@ -8,17 +8,21 @@ export type TutorContext = {
   phaseName: string
   currentMove: string
   explanation: string
+  mode?: 'guided' | 'quick'
+  moveIndex?: number
+  totalMoves?: number
 }
 
 type Props = {
   context: TutorContext
   autoQuestion?: string
   onAutoQuestionHandled?: () => void
+  preFill?: { text: string; seq: number }
 }
 
 const tutorUrl = (import.meta.env.VITE_TUTOR_URL as string | undefined) ?? ''
 
-export default function TutorPanel({ context, autoQuestion, onAutoQuestionHandled }: Props) {
+export default function TutorPanel({ context, autoQuestion, onAutoQuestionHandled, preFill }: Props) {
   const { t, lang } = useLanguage()
   const [response, setResponse] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -27,6 +31,7 @@ export default function TutorPanel({ context, autoQuestion, onAutoQuestionHandle
   const [question, setQuestion] = useState('')
   const timestampsRef = useRef<number[]>([])
   const autoHandledRef = useRef(false)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   // Handle proactive auto-question from parent
   useEffect(() => {
@@ -38,6 +43,14 @@ export default function TutorPanel({ context, autoQuestion, onAutoQuestionHandle
   // ask is defined below in this same scope — eslint-disable is needed
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoQuestion])
+
+  // Handle "Stuck?" pre-fill trigger
+  useEffect(() => {
+    if (preFill) {
+      setQuestion(preFill.text)
+      inputRef.current?.focus()
+    }
+  }, [preFill])
 
   if (!tutorUrl) return null
 
@@ -101,6 +114,7 @@ export default function TutorPanel({ context, autoQuestion, onAutoQuestionHandle
 
       <div className="flex gap-2">
         <input
+          ref={inputRef}
           type="text"
           value={question}
           onChange={e => setQuestion(e.target.value)}

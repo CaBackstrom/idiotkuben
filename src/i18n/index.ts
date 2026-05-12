@@ -139,6 +139,8 @@ const translations = {
     guided: {
       next: 'Done — next move',
       back: 'Back',
+      stuck: 'Stuck?',
+      stuckPreFillTemplate: "I think I made a mistake somewhere. I'm on {phase}, move {n} of {total}. Can you help me check if my cube looks right?",
       stepOf: 'moves',
       done: 'Cube solved!',
       keyboardHint: 'Tip: use arrow keys ← → to navigate, spacebar to play/pause.',
@@ -313,6 +315,8 @@ const translations = {
     guided: {
       next: 'Klar — nästa drag',
       back: 'Backa',
+      stuck: 'Fastnat?',
+      stuckPreFillTemplate: 'Jag tror jag gjort fel någonstans. Jag är på {phase}, drag {n} av {total}. Kan du hjälpa mig kolla om min kub ser rätt ut?',
       stepOf: 'drag',
       done: 'Kuben är löst!',
       keyboardHint: 'Tips: använd piltangenterna ← → för att navigera, mellanslag för att spela/pausa.',

@@ -20,6 +20,7 @@ const OrientationBadge = forwardRef<HTMLDivElement>((_, ref) => (
       pointerEvents: 'none',
       userSelect: 'none',
       whiteSpace: 'nowrap',
+      zIndex: 10,
     }}
   />
 ))

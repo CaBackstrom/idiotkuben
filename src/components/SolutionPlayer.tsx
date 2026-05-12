@@ -184,6 +184,10 @@ function GuidedPlayer({ initialState, phases, navigate, onPhaseChange, solveStar
   const [showProactiveCard, setShowProactiveCard] = useState(false)
   const [tutorAutoQuestion, setTutorAutoQuestion] = useState<string | undefined>(undefined)
 
+  // "Fastnat?" pre-fill state
+  const [stuckPreFill, setStuckPreFill] = useState<{ text: string; seq: number } | undefined>(undefined)
+  const tutorRef = useRef<HTMLDivElement>(null)
+
   const totalMoves = guidedMoves.length
   const isDone = guidedStep >= totalMoves && !mq.isAnimating
   const { phase: currentPhase, phaseStep, phaseTotal } = getPhaseAtStep(
@@ -244,6 +248,18 @@ function GuidedPlayer({ initialState, phases, navigate, onPhaseChange, solveStar
     setCubeDisplayState(guidedStates[newStep])
     setCubeKey(k => k + 1)
     mq.clear()
+  }
+
+  function handleStuck() {
+    const template = t('guided.stuckPreFillTemplate')
+    const preText = template
+      .replace('{phase}', t(`phases.${currentPhase.id}`))
+      .replace('{n}', String(phaseStep + 1))
+      .replace('{total}', String(phaseTotal))
+    setStuckPreFill(s => ({ text: preText, seq: (s?.seq ?? 0) + 1 }))
+    requestAnimationFrame(() => {
+      tutorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
   }
 
   useEffect(() => {
@@ -419,16 +435,22 @@ function GuidedPlayer({ initialState, phases, navigate, onPhaseChange, solveStar
           {t('guided.keyboardHint')}
         </p>
 
-        <TutorPanel
-          context={{
-            phase: currentPhase.id,
-            phaseName: t(`phases.${currentPhase.id}`),
-            currentMove: instruction?.code ?? '—',
-            explanation: instruction?.primary ?? '',
-          }}
-          autoQuestion={tutorAutoQuestion}
-          onAutoQuestionHandled={() => setTutorAutoQuestion(undefined)}
-        />
+        <div ref={tutorRef}>
+          <TutorPanel
+            context={{
+              phase: currentPhase.id,
+              phaseName: t(`phases.${currentPhase.id}`),
+              currentMove: instruction?.code ?? '—',
+              explanation: instruction?.primary ?? '',
+              mode: 'guided',
+              moveIndex: phaseStep + 1,
+              totalMoves: phaseTotal,
+            }}
+            autoQuestion={tutorAutoQuestion}
+            onAutoQuestionHandled={() => setTutorAutoQuestion(undefined)}
+            preFill={stuckPreFill}
+          />
+        </div>
 
         {/* Desktop buttons — hidden on mobile */}
         <div className="hidden sm:grid grid-cols-2 gap-2">
@@ -447,11 +469,17 @@ function GuidedPlayer({ initialState, phases, navigate, onPhaseChange, solveStar
             {t('guided.next')} {'→'}
           </button>
         </div>
+        <button
+          onClick={handleStuck}
+          className="hidden sm:block w-full py-2 text-sm text-[var(--muted)] border border-[var(--border)] rounded hover:bg-gray-50 active:scale-[0.97] transition-all duration-150"
+        >
+          {t('guided.stuck')}
+        </button>
       </div>
 
       {/* Mobile sticky bar — hidden on desktop */}
       <div
-        className="fixed bottom-0 left-0 right-0 z-50 flex justify-between gap-3 px-6 py-4 sm:hidden"
+        className="fixed bottom-0 left-0 right-0 z-50 flex gap-2 px-4 py-4 sm:hidden"
         style={{ background: 'var(--bg)', borderTop: '1px solid rgba(26,26,26,0.06)' }}
       >
         <button
@@ -460,6 +488,12 @@ function GuidedPlayer({ initialState, phases, navigate, onPhaseChange, solveStar
           className="flex-1 py-3 text-sm border border-[var(--border)] rounded hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.97] transition-all duration-150"
         >
           {'←'} {t('guided.back')}
+        </button>
+        <button
+          onClick={handleStuck}
+          className="shrink-0 px-4 py-3 text-sm text-[var(--muted)] border border-[var(--border)] rounded hover:bg-gray-50 active:scale-[0.97] transition-all duration-150"
+        >
+          {t('guided.stuck')}
         </button>
         <button
           onClick={handleNext}
